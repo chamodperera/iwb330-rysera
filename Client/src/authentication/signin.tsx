@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import googleIcon from "@/assets/icons/google.svg";
+import GoogleButton from "@/components/googleButton";
 import { Link } from "react-router-dom";
 
 export default function Signin() {
@@ -30,13 +29,7 @@ export default function Signin() {
           <div className="flex-grow border-t border-border"></div>
         </div>
         <div className="space-y-4">
-          <Button
-            className="w-full hover:border-black hover:bg-white border-border text-base gap-2"
-            variant="outline"
-          >
-            <img src={googleIcon} alt="Google icon" className="w-7 h-7 mr-2" />
-            Google
-          </Button>
+          <GoogleButton />
         </div>
         <div className="text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}
