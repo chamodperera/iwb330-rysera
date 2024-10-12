@@ -47,7 +47,7 @@ export default function PrintingService() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-6 h-svh">
+        <div className="flex gap-6 h-[85vh]">
           {/* PLA Info Card (Left) */}
           <Card className="p-6 w-1/4">
             <div className="mb-6">
