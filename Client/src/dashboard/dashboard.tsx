@@ -1,16 +1,33 @@
-import { UploadCloud, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDownCircle, DeleteIcon, LucideDelete, PlusCircleIcon, PlusIcon, RecycleIcon, TrashIcon, UploadCloud, User } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import PLA from '../assets/pla.png';
-import { useState } from 'react';
+import STLViewer from './stlViewer'; // Import the STLViewer component
+import Header from './header';
+import { ChevronRightIcon } from 'lucide-react';
+import {Button} from '@/components/ui/button';
+
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 export default function PrintingService() {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setUploadedFile(event.target.files[0]);
+    if (event.target.files) {
+      const newFiles = Array.from(event.target.files);
+      setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      setCurrentFileIndex(uploadedFiles.length); // Show the newly added file
     }
   };
 
@@ -28,22 +45,24 @@ export default function PrintingService() {
     event.preventDefault();
     setDragActive(false);
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      setUploadedFile(event.dataTransfer.files[0]);
+      const newFiles = Array.from(event.dataTransfer.files);
+      setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      setCurrentFileIndex(uploadedFiles.length); // Show the newly added file
     }
   };
-  
+
+  const handleNextFile = () => {
+    setCurrentFileIndex((prevIndex) => (prevIndex + 1) % uploadedFiles.length);
+  };
+
+  const handleAddFile = () => {
+    document.getElementById('fileInput')?.click();
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-black">
       {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Rysera - 3D Printing</h1>
-          <div className="flex items-center gap-4">
-            <button className="text-gray-700 hover:text-gray-900">View Orders</button>
-            <User className="h-6 w-6" />
-          </div>
-        </div>
-      </header>
+    < Header />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
@@ -64,42 +83,83 @@ export default function PrintingService() {
             </CardContent>
           </Card>
 
-          {/* Upload Area (Center) */}
-          <div className="flex items-center justify-center w-full col-span-1">
-        <div
-          className={`border-2 border-dashed rounded-lg h-full w-full flex flex-col items-center justify-center ${dragActive ? 'border-blue-500' : 'border-gray-200'}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <UploadCloud className="h-12 w-12 text-gray-400 mb-4" />
-          <div className="text-center">
-            <p className="text-gray-600">
-              Drag your 3D model here, or{' '}
-              <label className="text-blue-500 hover:text-blue-600 cursor-pointer">
-                Browse
-                <input
-                  type="file"
-                  accept=".stl"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </label>
-            </p>
-            <p className="text-sm text-gray-500 mt-2">.STL files up to 200mb</p>
-            {uploadedFile && (
-              <p className="text-sm text-gray-500 mt-2">
-                Uploaded file: {uploadedFile.name}
-              </p>
+          {/* Upload Area or STL Viewer (Center) */}
+          <div
+            className={"flex flex-col items-center justify-center w-full col-span-1 border rounded-lg"}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {uploadedFiles.length > 0 ? (
+              <>  
+                <div className="flex place-self-end m-4">
+                  <Button variant="outline" size="icon2" onClick={
+                    () => {
+                      const newFiles = uploadedFiles.filter((_, index) => index !== currentFileIndex);
+                      setUploadedFiles(newFiles);
+                      setCurrentFileIndex(Math.min(currentFileIndex, newFiles.length - 1));
+                  }} >
+                  <TrashIcon color= "red" className="h-8 w-8"/>
+                  </Button>
+                  <Button variant="outline" size="icon2" onClick={handleAddFile} className='ml-2'>
+                  <PlusIcon className="h-8 w-8"/>
+                  <input
+                      id="fileInput"
+                      type="file"
+                      accept=".stl"
+                      className="hidden"
+                      multiple
+                      onChange={handleFileChange}
+                    />
+                  </Button>
+                  
+                </div>
+                <STLViewer file={uploadedFiles[currentFileIndex]} />
+                <div className="mt-6 pb-6">
+                  <Pagination>
+                    <PaginationPrevious onClick={handleNextFile} />
+                    <PaginationContent>
+                      {uploadedFiles.map((_, index) => (
+                        <PaginationItem key={index}>
+                          <PaginationLink
+                            isActive={index === currentFileIndex}
+                            onClick={() => setCurrentFileIndex(index)}
+                          >
+                            {index + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                    </PaginationContent>
+                    <PaginationNext onClick={handleNextFile} />
+                  </Pagination>
+                </div>
+              </>
+            ) : (
+              <div className={`flex flex-col items-center justify-center border-2 border-dashed p-16 rounded-lg ${dragActive ? 'border-blue-500' : 'border-gray-200'}`}>
+                <UploadCloud className="h-12 w-12 text-gray-400 mb-4" />
+                <div className="text-center">
+                  <p className="text-gray-600">
+                    Drag your 3D model here, or{' '}
+                    <label className="text-blue-500 hover:text-blue-600 cursor-pointer">
+                      Browse
+                      <input
+                        type="file"
+                        accept=".stl"
+                        className="hidden"
+                        multiple
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">.STL files up to 200mb</p>
+                </div>
+              </div>
             )}
           </div>
-        </div>
-      </div>
 
           {/* Settings Panel (Right) */}
           <div className='w-1/4'>
             <div className="space-y-6">
-              {/* Quality Selector */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quality

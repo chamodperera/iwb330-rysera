@@ -1,22 +1,22 @@
 import React from 'react';
-import user from '../assets/user.png';
-import { Button } from "../components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+
 
 const Header: React.FC = () => {
     return (
-            <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-semibold text-black">
-                    Rysera-3D Printing
-                </span>
-                <div className="flex items-center font-bold">
-                    <Button variant="secondary" className='bg-neutral-200 text-black'>View Orders</Button>
-                    <img 
-                        alt="User Profile" 
-                        src={user} 
-                        className="ml-10 w-10 h-10 rounded-full" 
-                    />
-                </div>
-            </div>
+        <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-semibold">Rysera - 3D Printing</h1>
+          <div className="flex items-center gap-4">
+            <button className="hover:text-gray-900 bg-neutral-200">View Orders</button>
+            <Avatar>
+  <AvatarImage src="https://github.com/shadcn.png" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>
+          </div>
+        </div>
+      </header>
     );
 };
 
