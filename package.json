@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@fontsource/poppins": "^5.1.0",
-    "@fontsource/raleway": "^5.1.0",
-    "embla-carousel-auto-scroll": "^8.3.0",
-    "embla-carousel-autoplay": "^8.3.0"
-  }
-}
