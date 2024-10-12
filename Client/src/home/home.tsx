@@ -20,7 +20,7 @@ const images = [image1, image2, image3, image4, image5, image6];
 
 const Home: React.FC = () => {
   return (
-    <div className="bg-black flex flex-col h-full">
+    <div className="min-h-screen bg-black flex flex-col h-full">
       <div className="container-xl place-self-center relative my-5 text-center">
         <span
           className="text-white text-7xl font-poppins font-bold"

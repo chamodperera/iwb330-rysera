@@ -4,8 +4,7 @@ import { Button } from "../components/ui/button";
 
 const Header: React.FC = () => {
     return (
-        <header className="bg-gray-100 shadow-md static font-inter">
-            <div className="flex justify-between items-center p-4">
+            <div className="flex justify-between items-center mb-4">
                 <span className="text-lg font-semibold text-black">
                     Rysera-3D Printing
                 </span>
@@ -18,7 +17,6 @@ const Header: React.FC = () => {
                     />
                 </div>
             </div>
-        </header>
     );
 };
 
