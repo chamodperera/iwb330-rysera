@@ -3,7 +3,7 @@ import { ChevronDownCircle, DeleteIcon, LucideDelete, PlusCircleIcon, PlusIcon, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import PLA from '../assets/pla.png';
-import STLViewer from './stlViewer'; // Import the STLViewer component
+import STLViewer from './STLViewer'; // Import the STLViewer component
 import Header from './header';
 import { ChevronRightIcon } from 'lucide-react';
 import {Button} from '@/components/ui/button';
