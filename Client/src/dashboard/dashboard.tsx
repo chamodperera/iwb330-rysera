@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { ChevronDownCircle, DeleteIcon, LucideDelete, PlusCircleIcon, PlusIcon, RecycleIcon, TrashIcon, UploadCloud, User } from 'lucide-react';
+import { PlusIcon, TrashIcon, UploadCloud} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import PLA from '../assets/pla.png';
-import STLViewer from './STLViewer'; // Import the STLViewer component
-import Header from './header';
-import { ChevronRightIcon } from 'lucide-react';
-import {Button} from '@/components/ui/button';
+import STLViewer from './components/STLViewer'; // Import the STLViewer component
+import Header from './components/header';
+import {Button} from '@/components/ui/button'
+import Estimator from './components/estimator';
 
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -22,6 +21,9 @@ export default function PrintingService() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [loadingStates, setLoadingStates] = useState<{ [key: number]: boolean }>({});
+  const [estimatedPrices, setEstimatedPrices] = useState<{ [key: number]: number | null }>({});
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -59,6 +61,16 @@ export default function PrintingService() {
     document.getElementById('fileInput')?.click();
   };
 
+  const handleEstimatePrice = (index: number) => {
+    setLoadingStates(prevStates => ({ ...prevStates, [index]: true }));
+    // Simulate API call or price estimation process
+    setTimeout(() => {
+      const price = Math.random() * 100; // Simulated price
+      setLoadingStates(prevStates => ({ ...prevStates, [index]: false }));
+      setEstimatedPrices(prevPrices => ({ ...prevPrices, [index]: price }));
+    }, 2000);
+  };
+
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Header */}
@@ -85,14 +97,14 @@ export default function PrintingService() {
 
           {/* Upload Area or STL Viewer (Center) */}
           <div
-            className={"flex flex-col items-center justify-center w-full col-span-1 border rounded-lg"}
+            className={"flex flex-col items-center justify-center w-full col-span-1 border rounded-lg relative"}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
             {uploadedFiles.length > 0 ? (
               <>  
-                <div className="flex place-self-end m-4">
+                <div className="flex place-self-end m-4 absolute top-0">
                   <Button variant="outline" size="icon2" onClick={
                     () => {
                       const newFiles = uploadedFiles.filter((_, index) => index !== currentFileIndex);
@@ -114,9 +126,22 @@ export default function PrintingService() {
                   </Button>
                   
                 </div>
+
                 <STLViewer file={uploadedFiles[currentFileIndex]} />
-                <div className="mt-6 pb-6">
-                  <Pagination>
+                {uploadedFiles.map((file, index) => (
+                  <div key={index} className='absolute bottom-16'>
+                    {index === currentFileIndex && (
+                      <Estimator
+                        file={file}
+                        loading={loadingStates[index] || false}
+                        estimatedPrice={estimatedPrices[index] || null}
+                        onEstimate={() => handleEstimatePrice(index)}
+                      />
+                    )}
+                  </div>
+                ))}
+
+                  <Pagination className='absolute bottom-0 mb-4'>
                     <PaginationPrevious onClick={handleNextFile} />
                     <PaginationContent>
                       {uploadedFiles.map((_, index) => (
@@ -132,7 +157,6 @@ export default function PrintingService() {
                     </PaginationContent>
                     <PaginationNext onClick={handleNextFile} />
                   </Pagination>
-                </div>
               </>
             ) : (
               <div className={`flex flex-col items-center justify-center border-2 border-dashed p-16 rounded-lg ${dragActive ? 'border-blue-500' : 'border-gray-200'}`}>
