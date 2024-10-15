@@ -1,5 +1,4 @@
 import React from "react";
-import printer from "../assets/printer.png";
 import image1 from "../assets/image1.png";
 import image2 from "../assets/image2.png";
 import image3 from "../assets/image3.png";
@@ -7,7 +6,11 @@ import image4 from "../assets/image4.png";
 import image5 from "../assets/image5.png";
 import image6 from "../assets/image6.png";
 import { Button } from "../components/ui/button";
-import { Carousel, CarouselContent, CarouselItem } from "../components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "../components/ui/carousel";
 import { Card, CardContent } from "../components/ui/card";
 import AutoScroll from "embla-carousel-auto-scroll";
 import insta from "../assets/icons/insta.svg";
@@ -45,19 +48,15 @@ const Home: React.FC = () => {
           <span className="text-white text-3xl text-neutral-600">
             Precision
           </span>
-          <span className="text-white text-2xl">
-            in Every Print
-          </span>
+          <span className="text-white text-2xl">in Every Print</span>
           <span className="text-white text-3xl text-neutral-600 mt-2">
             Innovation
           </span>
-          <span className="text-white text-2xl mb-14">
-            in Every Design
-          </span>
+          <span className="text-white text-2xl mb-14">in Every Design</span>
           <Button variant="secondary">Get a Quote</Button>
         </div>
         <video
-           src={printerVideo}
+          src={printerVideo}
           autoPlay
           loop
           muted
@@ -74,19 +73,22 @@ const Home: React.FC = () => {
       >
         <CarouselContent className="flex carousel-scroll mt-10">
           {Array.from({ length: 10 }).map((_, index) => (
-        <CarouselItem key={index} className="basis-1/2 sm:basis-1/3 md:basis-1/6">
-          <div className="p-1">
-            <Card className="rounded-none border-0 bg-black">
-          <CardContent className="flex items-center justify-center p-0 border-0 aspect-video">
-            <img
-              src={images[index % images.length]}
-              alt={`Image ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-          </CardContent>
-            </Card>
-          </div>
-        </CarouselItem>
+            <CarouselItem
+              key={index}
+              className="basis-1/2 sm:basis-1/3 md:basis-1/6"
+            >
+              <div className="p-1">
+                <Card className="rounded-none border-0 bg-black">
+                  <CardContent className="flex items-center justify-center p-0 border-0 aspect-video">
+                    <img
+                      src={images[index % images.length]}
+                      alt={`Image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </CarouselItem>
           ))}
         </CarouselContent>
       </Carousel>
@@ -94,13 +96,25 @@ const Home: React.FC = () => {
         <span className="text-white text-sm font-raleway font-normal pr-4">
           All Rights Reserved. © 2024 Rysera Innovation
         </span>
-        <a href="https://www.linkedin.com/company/99121245" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://www.linkedin.com/company/99121245"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img src={linkedin} alt="linkedin" className="w-6 h-6 ml-2" />
         </a>
-        <a href="https://www.instagram.com/rysera.innovations/" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://www.instagram.com/rysera.innovations/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img src={insta} alt="instagram" className="w-6 h-6 ml-2" />
         </a>
-        <a href="https://www.facebook.com/Rysera.innovations?_rdc=1&_rdr" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://www.facebook.com/Rysera.innovations?_rdc=1&_rdr"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img src={facebook} alt="facebook" className="w-6 h-6 ml-2" />
         </a>
       </div>
@@ -109,4 +123,3 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-
