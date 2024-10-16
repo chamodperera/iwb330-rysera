@@ -24,9 +24,9 @@ const images = [image1, image2, image3, image4, image5, image6];
 const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-black flex flex-col h-full">
-      <div className="container-xl place-self-center relative my-5 text-center">
+      <div className="container-xl place-self-center relative my-5 text-center mt-8 lg:mt-4">
         <span
-          className="text-white text-7xl font-poppins font-bold"
+          className="text-white text-5xl font-poppins font-bold justify-center ml-5 lg:text-6xl"
           style={{
             background: `linear-gradient(to bottom right, #000 0%, #343434 50%) bottom right / 60% 50% no-repeat,
                         linear-gradient(to bottom left, #000 0%, #343434 50%) bottom left / 50% 50% no-repeat,
@@ -38,21 +38,21 @@ const Home: React.FC = () => {
         >
           3D Printing
         </span>
-        <span className="text-white text-2xl font-poppins font-bold mt-2 absolute left-36 bottom-4">
+        <span className="text-white text-3xl lg:text-2xl font-poppins font-bold absolute inset-0 flex items-center justify-center ml-2 lg:left-36 bottom-4 mt-4 lg:justify-normal lg:ml-0 ">
           RYSERA
         </span>
       </div>
-      <div className="w-1/3 border-t-2 border-white mt-4"></div>
-      <div className="flex flex-col md:flex-row place-content-evenly items-center">
-        <div className="flex flex-col font-raleway font-bold text-center md:text-left">
-          <span className="text-white text-3xl text-neutral-600">
+      <div className="w-1/3 border-t-2 border-white mt-8 lg:mt-1"></div>
+      <div className="flex flex-col md:flex-row place-content-evenly items-center mt-12 lg:mt-0">
+        <div className="flex flex-col font-raleway font-bold text-center lg:text-left">
+          <span className="text-white text-5xl lg:text-4xl">
             Precision
           </span>
-          <span className="text-white text-2xl">in Every Print</span>
-          <span className="text-white text-3xl text-neutral-600 mt-2">
+          <span className="text-stone-400 text-3xl">in Every Print</span>
+          <span className="text-white text-5xl lg:text-4xl  mt-2">
             Innovation
           </span>
-          <span className="text-white text-2xl mb-14">in Every Design</span>
+          <span className="text-stone-400 text-3xl mb-7 lg:mb-14">in Every Design</span>        
           <Button variant="secondary">Get a Quote</Button>
         </div>
         <video
@@ -60,10 +60,13 @@ const Home: React.FC = () => {
           autoPlay
           loop
           muted
-          className="w-1/3 h-1/6 object-cover"
+          className="w-1/4 h-1/8 object-cover hidden lg:block"
         />
       </div>
-      <div className="w-2/3 border-t-2 border-white mt-6 mx-auto"></div>
+      <div className="flex justify-end">
+        <div></div>
+        <div className=" flex justify-end w-1/3 border-t-2 border-white mt-12 lg:mt-3"></div>
+      </div>
       <Carousel
         opts={{
           loop: true,
@@ -71,11 +74,11 @@ const Home: React.FC = () => {
         plugins={[AutoScroll({ speed: 0.5 })]}
         className="overflow-x-hidden"
       >
-        <CarouselContent className="flex carousel-scroll mt-10">
+        <CarouselContent className="flex carousel-scroll mt-24 lg:mt-5">
           {Array.from({ length: 10 }).map((_, index) => (
             <CarouselItem
               key={index}
-              className="basis-1/2 sm:basis-1/3 md:basis-1/6"
+              className="basis-80 lg:basis-64"
             >
               <div className="p-1">
                 <Card className="rounded-none border-0 bg-black">
@@ -92,10 +95,13 @@ const Home: React.FC = () => {
           ))}
         </CarouselContent>
       </Carousel>
-      <div className="bg-black w-full flex flex-row justify-center p-4">
+      <div className="bg-black max-w-full flex flex-row justify-center p-4 mt-auto flex-wrap ">
+        <div>
         <span className="text-white text-sm font-raleway font-normal pr-4">
           All Rights Reserved. © 2024 Rysera Innovation
         </span>
+        </div>
+        <div className="flex flex-row">
         <a
           href="https://www.linkedin.com/company/99121245"
           target="_blank"
@@ -117,6 +123,7 @@ const Home: React.FC = () => {
         >
           <img src={facebook} alt="facebook" className="w-6 h-6 ml-2" />
         </a>
+        </div>
       </div>
     </div>
   );
