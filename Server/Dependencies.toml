@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.10.0"
+distribution-version = "2201.10.1"
 
 [[package]]
 org = "Rysera"
@@ -13,14 +13,13 @@ name = "Server"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
 	{org = "Rysera", packageName = "Server", moduleName = "Server"},
-	{org = "Rysera", packageName = "Server", moduleName = "Server.firebase_provider"},
+	{org = "Rysera", packageName = "Server", moduleName = "Server.supabase"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.utils"}
 ]
 
@@ -135,9 +134,6 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "time"}
 ]
-modules = [
-	{org = "ballerina", packageName = "jwt", moduleName = "jwt"}
-]
 
 [[package]]
 org = "ballerina"
@@ -230,7 +226,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.10.0"
+version = "2.10.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},

@@ -1,15 +1,15 @@
 import ballerina/http;
 import ballerina/log;
-// import Server.firebase_provider;
+import Server.supabase;
 
 // Define the list of valid API keys
 configurable string[] validApiKeys = ?;
 
-// configurable string firebaseWebApiKey = ?;
-// configurable string firebaseProjectId = ?;
+configurable string supabaseRef = ?;
+configurable string supabaseSecret = ?;
 
-// //define the firebase service
-// final firebase_provider:firebaseService firebaseService = check new(firebaseWebApiKey, firebaseProjectId);
+//define the supabase service
+final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
 
 // Define the request interceptor class
 service class RequestInterceptor {
@@ -73,17 +73,19 @@ service http:InterceptableService / on new http:Listener(9090) {
         return "Hello, World!";
     }
 
-    // resource function post googleLogin(@http:Payload json jsonObj) returns json|error {
-    //     string accessToken = "";
-    //     var accessTokenValue = jsonObj.access_token;
-    //     if accessTokenValue is string {
-    //         accessToken = accessTokenValue;
-    //     } else {
-    //         return "Invalid access token";
-    //     }
-    //     json|error result = firebaseService.googleLogin(accessToken.toString());
-    //     return result;
-    // }
+    resource function post googleLogin(@http:Payload json jsonObj) returns json|http:Unauthorized|error {
+        string accessToken = "";
+        var accessTokenValue = jsonObj.access_token;
+        if accessTokenValue is string {
+            accessToken = accessTokenValue.toString();
+        } else {
+            return <http:Unauthorized>{
+                body:"No access token provided"
+            };
+        }
+        json|http:Unauthorized|error result = supabaseService.googleLogin(accessToken);
+        return result;
+    }
 
 
 }
