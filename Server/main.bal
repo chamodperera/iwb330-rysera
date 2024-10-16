@@ -1,15 +1,15 @@
 import ballerina/http;
 import ballerina/log;
-import Server.firebase_provider;
+import Server.supabase;
 
 // Define the list of valid API keys
 configurable string[] validApiKeys = ?;
 
-configurable string firebaseWebApiKey = ?;
-configurable string firebaseProjectId = ?;
+configurable string supabaseRef = ?;
+configurable string supabaseSecret = ?;
 
-//define the firebase service
-final firebase_provider:firebaseService firebaseService = check new(firebaseWebApiKey, firebaseProjectId);
+//define the supabase service
+final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
 
 // Define the request interceptor class
 service class RequestInterceptor {
@@ -21,7 +21,7 @@ service class RequestInterceptor {
             @http:Header {name: "x-api-key"} string apiKey)
         returns http:Unauthorized|http:NextService|error? {
         
-        string reqPath = from string p in path select "/"+p;
+        // string reqPath = from string p in path select "/"+p;
 
 
         // Check if API key is valid
@@ -40,23 +40,23 @@ service class RequestInterceptor {
         }
 
         //check jwt token
-        if reqPath != "/googleLogin" {
-            if jwtToken is string {
-                json|error result = firebaseService.validateJwtToken(jwtToken);
-                if result is json {
-                    log:printInfo("JWT Token is valid");
-                    ctx.set("jwtClaims", result);
-                } else {
-                    return <http:Unauthorized> {
-                        body: "Invalid JWT Token"
-                    };
-                }
-            } else {
-                return <http:Unauthorized> {
-                    body: "JWT Token not found"
-                };
-            }
-        }
+        // if reqPath != "/googleLogin" {
+        //     if jwtToken is string {
+        //         json|error result = firebaseService.validateJwtToken(jwtToken);
+        //         if result is json {
+        //             log:printInfo("JWT Token is valid");
+        //             ctx.set("jwtClaims", result);
+        //         } else {
+        //             return <http:Unauthorized> {
+        //                 body: "Invalid JWT Token"
+        //             };
+        //         }
+        //     } else {
+        //         return <http:Unauthorized> {
+        //             body: "JWT Token not found"
+        //         };
+        //     }
+        // }
 
         // Call the next service in the pipeline
         return ctx.next();
@@ -73,15 +73,17 @@ service http:InterceptableService / on new http:Listener(9090) {
         return "Hello, World!";
     }
 
-    resource function post googleLogin(@http:Payload json jsonObj) returns json|error {
+    resource function post googleLogin(@http:Payload json jsonObj) returns json|http:Unauthorized|error {
         string accessToken = "";
         var accessTokenValue = jsonObj.access_token;
         if accessTokenValue is string {
-            accessToken = accessTokenValue;
+            accessToken = accessTokenValue.toString();
         } else {
-            return "Invalid access token";
+            return <http:Unauthorized>{
+                body:"No access token provided"
+            };
         }
-        json|error result = firebaseService.googleLogin(accessToken.toString());
+        json|http:Unauthorized|error result = supabaseService.googleLogin(accessToken);
         return result;
     }
 
