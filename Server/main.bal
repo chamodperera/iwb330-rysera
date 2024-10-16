@@ -1,15 +1,15 @@
 import ballerina/http;
 import ballerina/log;
-import Server.firebase_provider;
+// import Server.firebase_provider;
 
 // Define the list of valid API keys
 configurable string[] validApiKeys = ?;
 
-configurable string firebaseWebApiKey = ?;
-configurable string firebaseProjectId = ?;
+// configurable string firebaseWebApiKey = ?;
+// configurable string firebaseProjectId = ?;
 
-//define the firebase service
-final firebase_provider:firebaseService firebaseService = check new(firebaseWebApiKey, firebaseProjectId);
+// //define the firebase service
+// final firebase_provider:firebaseService firebaseService = check new(firebaseWebApiKey, firebaseProjectId);
 
 // Define the request interceptor class
 service class RequestInterceptor {
