@@ -1,7 +1,7 @@
 import ballerina/http;
 import ballerina/log;
 import ballerinax/googleapis.drive;
-// import Server.firebase_provider;
+// import Server.supabase;
 import Server.estimator;
 import ballerina/mime;
 import Server.google_drive;
@@ -9,12 +9,11 @@ import Server.google_drive;
 // Define the list of valid API keys
 configurable string[] validApiKeys = ?;
 
-// configurable string firebaseWebApiKey = ?;
-// configurable string firebaseProjectId = ?;
+configurable string supabaseRef = ?;
+configurable string supabaseSecret = ?;
 
-
-//define the firebase service
-// final firebase_provider:firebaseService firebaseService = check new(firebaseWebApiKey, firebaseProjectId);
+//define the supabase service
+final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
 
 // Define the request interceptor class
 service class RequestInterceptor {

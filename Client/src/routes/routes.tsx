@@ -4,6 +4,8 @@ import Signup from "../authentication/signup";
 import Signin from "../authentication/signin";
 import Home from "@/home/home";
 import Dashboard from "@/dashboard/dashboard";
+import DashboardLayout from "@/dashboard/layout";
+import { Orders } from "@/dashboard/orders";
 
 const routes: RouteObject[] = [
   {
@@ -12,7 +14,12 @@ const routes: RouteObject[] = [
   },
   {
     path: "/dashboard",
-    element: <Dashboard />,
+    element: <DashboardLayout />,
+    children: [
+      { path: "", element: <Dashboard /> },
+      { path: "main", element: <Dashboard /> },
+      { path: "orders", element: <Orders /> },
+    ],
   },
   {
     path: "/auth",
