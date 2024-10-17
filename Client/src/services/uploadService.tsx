@@ -25,7 +25,7 @@ export interface UploadResponse {
 
 export const api = {
   // Upload STL file
-  uploadFile: async (file: File): Promise<UploadResponse> => {
+  uploadFile: async (file: File, p0: (progress: any) => void): Promise<UploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
 
