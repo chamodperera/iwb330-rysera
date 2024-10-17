@@ -5,12 +5,14 @@ import ballerinax/googleapis.drive;
 import Server.estimator;
 import ballerina/mime;
 import Server.google_drive;
+import Server.volume_calculator;
 
 // Define the list of valid API keys
+type Vector [float, float, float];
 configurable string[] validApiKeys = ?;
 
-configurable string supabaseRef = ?;
-configurable string supabaseSecret = ?;
+// configurable string supabaseRef = ?;
+// configurable string supabaseSecret = ?;
 
 //define the supabase service
 // final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
@@ -93,6 +95,7 @@ configurable string clientId = ?;
 configurable string clientSecret = ?;
 final estimator:estimatorService estimator = check new(estimatorApiKey);
 final google_drive:driverService googleDriveService = check new(refreshToken, clientId, clientSecret);
+final volume_calculator:VolumeCalculator volume_calculator = new();
 
 
 service http:InterceptableService / on new http:Listener(9090) {
@@ -100,7 +103,8 @@ service http:InterceptableService / on new http:Listener(9090) {
         return new RequestInterceptor();
     }
 
-    resource function post estimate(http:Request request) returns json|error {
+
+    resource function post upload(http:Request request) returns json|error {
         // Extract the file from multipart request
         mime:Entity[] bodyParts = check request.getBodyParts();
         
@@ -116,28 +120,51 @@ service http:InterceptableService / on new http:Listener(9090) {
                 // Upload the file to Google Drive
                 drive:File|error uploadedFileResult = googleDriveService.uploadFile(fileContent, fileName, "1-DDCsqJJRTkBOvzDvTX-qHhYOI-Bpf6n");
 
-                // estimate the price from the file
-                if uploadedFileResult is drive:File{
-                    string fileID = uploadedFileResult.id.toString();
-                    string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
-                    json|error result = estimator.estimate(url);
-                    if result is json {
-                        float price = check result.data.price;
-                        float lkrPrice = price * 300;
-                        float finalPrice = (lkrPrice < 2000.0) 
-                            ? 24124 - 53.5 * lkrPrice + 0.0386 * lkrPrice * lkrPrice - 8.82e-6 * lkrPrice * lkrPrice * lkrPrice
-                            : 12151 - 10.6 * lkrPrice + 3.29e-3 * lkrPrice * lkrPrice - 2.88e-7 * lkrPrice * lkrPrice * lkrPrice;
-                        json response = {
-                            "price": finalPrice.round(2)
-                        };
-                        return response;
-                    } else {
-                        return error("Estimation failed: " + result.toString());
-                    }
-                }
+                // Calculate the volume of the file
+                float|error volume = volume_calculator.parseSTL(fileContent);
+
+    if uploadedFileResult is drive:File {
+        if volume is float {
+            string fileID = uploadedFileResult.id.toString();
+            string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
+            json response = {
+                "url": url,
+                "volume": volume
+            };
+            return response;
+        } else {
+            return error("Volume calculation failed: " + volume.toString());
+        }
+    } else {
+        return error("File upload failed: " + uploadedFileResult.toString());
+    }
+               
             }
         }
         
         return error("No file found in the request");
+    }
+
+    resource function post estimate(@http:Payload json jsonObj) returns json|error {
+        string url = check jsonObj.url;
+        float weight = check jsonObj.weight;
+        json|error result = estimator.estimate(url);
+
+        if result is json {
+            float price = check result.data.price;
+            float lkrPrice = price * 300;
+            float finalPrice = (lkrPrice < 2000.0) 
+                ? 24124 - 53.5 * lkrPrice + 0.0386 * lkrPrice * lkrPrice - 8.82e-6 * lkrPrice * lkrPrice * lkrPrice
+                : 12151 - 10.6 * lkrPrice + 3.29e-3 * lkrPrice * lkrPrice - 2.88e-7 * lkrPrice * lkrPrice * lkrPrice;
+            int totalminutes = <int>((finalPrice/3.5 - 6*weight)/0.69);
+            string time =string `${totalminutes/60} hr ${totalminutes%60} m`;
+            json response = {
+                "price": finalPrice.round(2),
+                "time": time
+            };
+            return response;
+        } else {
+            return error("Estimation failed: " + result.toString());
+        }
     }
 }
