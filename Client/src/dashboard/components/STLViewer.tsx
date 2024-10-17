@@ -9,6 +9,7 @@ interface STLViewerProps {
 
 const STLViewer: React.FC<STLViewerProps> = ({ file }) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
   useEffect(() => {
     if (!file) return;
@@ -19,6 +20,7 @@ const STLViewer: React.FC<STLViewerProps> = ({ file }) => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
+    rendererRef.current = renderer;
 
     renderer.setSize(width, height);
     renderer.setClearColor(0xffffff, 1);
@@ -52,21 +54,23 @@ const STLViewer: React.FC<STLViewerProps> = ({ file }) => {
       scene.add(directionalLight);
 
       // Position camera
-      const boundingBox = new THREE.Box3().setFromObject(mesh);
-      const size = boundingBox.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      camera.position.set(0, 0, maxDim * 1.5);
+      camera.position.z = 200;
 
-      function animate() {
+      const animate = () => {
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
-      }
+      };
       animate();
     });
 
     return () => {
-      mountRef.current?.removeChild(renderer.domElement);
+      // Clean up the WebGL context
+      renderer.dispose();
+      rendererRef.current = null;
+      if (mountRef.current) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
     };
   }, [file]);
 
