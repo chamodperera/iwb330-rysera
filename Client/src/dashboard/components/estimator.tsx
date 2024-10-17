@@ -1,8 +1,8 @@
-import { EstimatedValuesCard } from "@/components/estimated-values-card";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ButtonLoading } from "@/components/ui/loadingButton";
-import { api } from "@/services/uploadService";
-import { useState } from "react";
+import { EstimatedValuesCard } from "@/components/estimated-values-card";
+import { getEstimate, uploadFile } from "../../services/estimator";
 
 interface EstimatorProps {
   unit: string;
@@ -40,16 +40,17 @@ const Estimator: React.FC<EstimatorProps> = ({
     setError(null);
 
     const startTime = performance.now();
-    
+
     try {
-      const weight = unit === 'mm' ? uploadedVolume * 0.00124 : uploadedVolume * 1.24;
-      
-      const estimateResult = await api.getEstimate(uploadedUrl, weight);
-      
+      if (unit === "mm") {
+        uploadedVolume = uploadedVolume / 1000;
+      }
+      const weight = uploadedVolume * 1.25;
+      const estimateResult = await getEstimate(uploadedUrl, weight);
+
       onEstimateComplete?.(estimateResult.price, estimateResult.time, weight);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      onEstimateComplete?.(0, '0', 0); // Reset the estimating state on error
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       const endTime = performance.now();
       const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -72,7 +73,7 @@ const Estimator: React.FC<EstimatorProps> = ({
       )}
       {isEstimating && !estimatedValues && <ButtonLoading />}
       {estimatedValues && (
-        <EstimatedValuesCard 
+        <EstimatedValuesCard
           loadTime={loadTime}
           estimatedPrice={estimatedValues.price}
           printDuration={estimatedValues.time}

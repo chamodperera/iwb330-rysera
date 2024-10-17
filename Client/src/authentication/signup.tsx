@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
-import googleIcon from "@/assets/icons/google.svg";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 export default function Signup() {
   return (
@@ -22,22 +20,8 @@ export default function Signup() {
             Creating an account will help use to deliver an amazing service
           </p>
         </div>
-        <div className="relative flex items-center py-5">
-          <div className="flex-grow border-t border-border"></div>
-          <span className="flex-shrink mx-4 text-muted-foreground text-sm font-medium">
-            CONTINUE WITH
-          </span>
-          <div className="flex-grow border-t border-border"></div>
-        </div>
-        <div className="space-y-4">
-          <Button
-            className="w-full hover:border-black hover:bg-white border-border text-base gap-2"
-            variant="outline"
-          >
-            <img src={googleIcon} alt="Google icon" className="w-7 h-7 mr-2" />
-            Google
-          </Button>
-        </div>
+
+        <Outlet />
         <div className="text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}
           <a className="underline text-muted-foreground" href="#">

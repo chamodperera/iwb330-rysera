@@ -5,7 +5,9 @@ import Signin from "../authentication/signin";
 import Home from "@/home/home";
 import Dashboard from "@/dashboard/dashboard";
 import DashboardLayout from "@/dashboard/layout";
-import { Orders } from "@/dashboard/orders";
+import GoogleButton from "@/components/googleButton";
+import { ProfileForm } from "@/components/profileForm";
+// import { Orders } from "@/dashboard/orders";
 
 const routes: RouteObject[] = [
   {
@@ -18,7 +20,7 @@ const routes: RouteObject[] = [
     children: [
       { path: "", element: <Dashboard /> },
       { path: "main", element: <Dashboard /> },
-      { path: "orders", element: <Orders /> },
+      // { path: "orders", element: <Orders /> },
     ],
   },
   {
@@ -26,7 +28,14 @@ const routes: RouteObject[] = [
     element: <Auth />,
     children: [
       { path: "", element: <Signin /> },
-      { path: "signup", element: <Signup /> },
+      {
+        path: "signup",
+        element: <Signup />,
+        children: [
+          { path: "", element: <GoogleButton /> },
+          { path: "register", element: <ProfileForm /> },
+        ],
+      },
       { path: "signin", element: <Signin /> },
     ],
   },
