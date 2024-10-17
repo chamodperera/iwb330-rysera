@@ -1,33 +1,45 @@
 import Server.estimator;
 import Server.google_drive;
 import Server.volume_calculator;
-
-import ballerina/http;
-import ballerina/log;
 import ballerina/mime;
 import ballerinax/googleapis.drive;
+import ballerina/http;
+import ballerina/log;
+import Server.db;
+import Server.utils;
 
 // Define the list of valid API keys
 type Vector [float, float, float];
 
-configurable string[] validApiKeys = ?;
+configurable string[] validApiKeys = ?; //valid api keys
+configurable string mongoDBConnectionString = ?; //mongodb connection string
+configurable string estimatorApiKey = ?;
+configurable string OAuthRefreshToken = ?;
+configurable string OAuthClientId = ?;
+configurable string OAuthClientSecret = ?;
 
-// CORS configuration
+//define mongoDB database
+final db:Database db = check new(mongoDBConnectionString);
+final estimator:estimatorService estimator = check new (estimatorApiKey);
+final google_drive:driverService googleDriveService = check new (OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
+final volume_calculator:VolumeCalculator volume_calculator = new ();
+final utils:googleService googleService = check new();
+
 http:CorsConfig corsConfig = {
-    allowOrigins: ["http://localhost:5173"], // In production, replace with specific origins
+    allowOrigins: ["http://localhost:5173"],
     allowCredentials: true,
-    allowHeaders: ["x-api-key","Content-Type"],
-    allowMethods: ["POST","OPTIONS"],
+    allowHeaders: [ "X-Api-Key", "Content-Type"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
     maxAge: 3600
-    };
-
+};
+// Define the request interceptor class
 service class RequestInterceptor {
     *http:RequestInterceptor;
 
     isolated resource function 'default [string... path](
             http:RequestContext ctx,
             http:Request req,
-            @http:Header {name: "x-api-key"} string|() apiKey)
+            @http:Header {name: "X-Api-Key"} string|() apiKey)
         returns http:Unauthorized|http:NextService|error? {
         
         if req.method == http:OPTIONS {
@@ -60,21 +72,56 @@ service class RequestInterceptor {
     }
 }
 
-configurable string estimatorApiKey = ?;
-configurable string refreshToken = ?;
-configurable string clientId = ?;
-configurable string clientSecret = ?;
-final estimator:estimatorService estimator = check new (estimatorApiKey);
-final google_drive:driverService googleDriveService = check new (refreshToken, clientId, clientSecret);
-final volume_calculator:VolumeCalculator volume_calculator = new ();
-
 @http:ServiceConfig {
     cors: corsConfig
 }
 
 service http:InterceptableService / on new http:Listener(9090) {
-    public function createInterceptors() returns RequestInterceptor[] {
-        return [new RequestInterceptor()];
+    
+    public function createInterceptors() returns RequestInterceptor {
+        return new RequestInterceptor();
+    }
+
+    // Define a simple GET resource to return a greeting
+    resource function get greeting(http:RequestContext ctx) returns string {
+        return "Hello, World!";
+    }
+
+    resource function get getUser(@http:Query string jwt) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+        if result is json {
+           //check if user exists in the database
+           db:User|() user = check db.getUser(check result.sub);
+              if (user is db:User) {
+                return user;
+              }else{
+                return ();
+              }
+        } else {
+            return result;
+        }
+    }
+
+
+    resource function post registerUser(@http:Query string jwt,db:UserData userData) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+
+        if result is json {
+            db:User user = {
+                uid: check result.sub,
+                email: check result.email,
+                name: userData.name,
+                avatar: check result.picture,
+                organization: userData.organization,
+                contact: userData.contact
+            };
+
+            //add user to the database
+            check  db.addUsers(user);
+            return user;
+        } else {
+            return result;
+        }
     }
 
     resource function post upload(http:Request request) returns json|error {
@@ -146,4 +193,5 @@ service http:InterceptableService / on new http:Listener(9090) {
             return error("Estimation failed: " + result.toString());
         }
     }
+
 }

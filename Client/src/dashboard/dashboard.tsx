@@ -7,7 +7,7 @@ import STLViewer from "./components/STLViewer";
 import { Button } from "@/components/ui/button";
 import Estimator from "./components/estimator";
 import {Pagination,PaginationContent,PaginationItem,PaginationLink,PaginationNext,PaginationPrevious,} from "@/components/ui/pagination";
-import { api } from "@/services/uploadService";
+import { getEstimate, uploadFile } from "../services/estimator";
 
 interface FileState {
   file: File;
@@ -38,7 +38,7 @@ export default function Dashboard() {
         const updatedStates = [...prevStates, ...newFileStates];
         // Start uploading each new file after state update
         newFileStates.forEach((_, index) => {
-          uploadFile(prevStates.length + index, updatedStates);
+          upload(prevStates.length + index, updatedStates);
         });
         return updatedStates;
       });
@@ -48,7 +48,7 @@ export default function Dashboard() {
     }
   };
 
-  const uploadFile = async (index: number, currentFileStates: FileState[]) => {
+  const upload = async (index: number, currentFileStates: FileState[]) => {
     setFileStates(prevStates => {
       const newStates = [...prevStates];
       newStates[index] = { ...newStates[index], status: 'uploading' };
@@ -56,7 +56,7 @@ export default function Dashboard() {
     });
 
     try {
-      const result = await api.uploadFile(currentFileStates[index].file, (progress) => {
+      const result = await uploadFile(currentFileStates[index].file, (progress: any) => {
         setFileStates(prevStates => {
           const newStates = [...prevStates];
           newStates[index] = { ...newStates[index], uploadProgress: progress };
