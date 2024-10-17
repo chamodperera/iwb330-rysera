@@ -13,7 +13,7 @@ configurable string supabaseRef = ?;
 configurable string supabaseSecret = ?;
 
 //define the supabase service
-final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
+// final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
 
 // Define the request interceptor class
 service class RequestInterceptor {
