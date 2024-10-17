@@ -12,3 +12,13 @@ export interface User {
   organization: string;
   contact: string;
 }
+
+export interface EstimateResponse {
+  price: number;
+  time: string;
+}
+
+export interface UploadResponse {
+  url: string;
+  volume: number;
+}

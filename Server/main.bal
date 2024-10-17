@@ -14,14 +14,14 @@ type Vector [float, float, float];
 configurable string[] validApiKeys = ?; //valid api keys
 configurable string mongoDBConnectionString = ?; //mongodb connection string
 configurable string estimatorApiKey = ?;
-configurable string refreshToken = ?;
-configurable string clientId = ?;
-configurable string clientSecret = ?;
+configurable string OAuthRefreshToken = ?;
+configurable string OAuthClientId = ?;
+configurable string OAuthClientSecret = ?;
 
 //define mongoDB database
 final db:Database db = check new(mongoDBConnectionString);
 final estimator:estimatorService estimator = check new (estimatorApiKey);
-final google_drive:driverService googleDriveService = check new (refreshToken, clientId, clientSecret);
+final google_drive:driverService googleDriveService = check new (OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
 final volume_calculator:VolumeCalculator volume_calculator = new ();
 final utils:googleService googleService = check new();
 

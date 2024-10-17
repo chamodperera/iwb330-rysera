@@ -18,16 +18,16 @@ dependencies = [
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "googleapis.drive"}
+	{org = "ballerinax", name = "googleapis.drive"},
+	{org = "ballerinax", name = "mongodb"}
 ]
 modules = [
 	{org = "Rysera", packageName = "Server", moduleName = "Server"},
+	{org = "Rysera", packageName = "Server", moduleName = "Server.db"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.estimator"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.google_drive"},
-	{org = "Rysera", packageName = "Server", moduleName = "Server.volume_calculator"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.utils"},
-	{org = "Rysera", packageName = "Server", moduleName = "Server.db"},
-
+	{org = "Rysera", packageName = "Server", moduleName = "Server.volume_calculator"}
 ]
 
 [[package]]
@@ -363,3 +363,17 @@ dependencies = [
 modules = [
 	{org = "ballerinax", packageName = "googleapis.drive", moduleName = "googleapis.drive"}
 ]
+
+[[package]]
+org = "ballerinax"
+name = "mongodb"
+version = "5.0.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "log"}
+]
+modules = [
+	{org = "ballerinax", packageName = "mongodb", moduleName = "mongodb"}
+]
+
