@@ -1,43 +1,29 @@
 import React, { useState } from "react";
 import { PlusIcon, TrashIcon, UploadCloud } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import PLA from "../assets/pla.png";
 import STLViewer from "./components/STLViewer";
 import { Button } from "@/components/ui/button";
 import Estimator from "./components/estimator";
+import {Pagination,PaginationContent,PaginationItem,PaginationLink,PaginationNext,PaginationPrevious,} from "@/components/ui/pagination";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 
 export default function Dashboard() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [loadingStates, setLoadingStates] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [estimatedPrices, setEstimatedPrices] = useState<{
-    [key: number]: number | null;
-  }>({});
-
+  const [loadingStates, setLoadingStates] = useState<boolean[]>([]);
+  const [estimatedValues, setEstimatedValues] = useState<{[key: number]: { price: number; time: string; weight: number } | null;}>({});
+  const [loadTimes, setLoadTimes] = useState<string[]>([]);
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
       setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      setLoadingStates([...loadingStates, ...newFiles.map(() => false)]);
       setCurrentFileIndex(uploadedFiles.length); // Show the newly added file
+      setLoadTimes([...loadTimes, ...newFiles.map(() => '')]);
     }
   };
 
@@ -69,15 +55,25 @@ export default function Dashboard() {
     document.getElementById("fileInput")?.click();
   };
 
-  const handleEstimatePrice = (index: number) => {
-    setLoadingStates((prevStates) => ({ ...prevStates, [index]: true }));
-    // Simulate API call or price estimation process
-    setTimeout(() => {
-      const price = Math.random() * 100; // Simulated price
-      setLoadingStates((prevStates) => ({ ...prevStates, [index]: false }));
-      setEstimatedPrices((prevPrices) => ({ ...prevPrices, [index]: price }));
-    }, 2000);
+  const handleLoadTime = (index: number, loadTime: string) => {
+    const updatedLoadTimes = [...loadTimes];
+    updatedLoadTimes[index] = loadTime;
+    setLoadTimes(updatedLoadTimes);
   };
+
+  const handleEstimateStart = (index: number) => {
+    const updatedLoadingStates = [...loadingStates];
+    updatedLoadingStates[index] = true;
+    setLoadingStates(updatedLoadingStates);
+  };
+
+  const handleEstimateComplete = (index: number, price: number, time: string, weight: number) => {
+    setEstimatedValues((prevValues) => ({
+      ...prevValues,
+      [index]: { price, time, weight },
+    }));
+  };
+
 
   return (
     <div className="flex gap-6 h-[85vh]">
@@ -129,8 +125,8 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 size="icon2"
-                onClick={handleAddFile}
                 className="ml-2"
+                onClick={handleAddFile}
               >
                 <PlusIcon className="h-8 w-8" />
                 <input
@@ -145,18 +141,20 @@ export default function Dashboard() {
             </div>
 
             <STLViewer file={uploadedFiles[currentFileIndex]} />
-            {uploadedFiles.map((file, index) => (
-              <div key={index} className="absolute bottom-16">
-                {index === currentFileIndex && (
-                  <Estimator
-                    file={file}
-                    loading={loadingStates[index] || false}
-                    estimatedPrice={estimatedPrices[index] || null}
-                    onEstimate={() => handleEstimatePrice(index)}
-                  />
-                )}
-              </div>
-            ))}
+            <div className="absolute bottom-16">
+              <Estimator
+                file={uploadedFiles[currentFileIndex]}
+                loading={loadingStates[currentFileIndex] || false}
+                unit="mm"
+                estimatedValues={estimatedValues[currentFileIndex]}
+                loadTime={loadTimes[currentFileIndex]}
+                onEstimateStart={() => handleEstimateStart(currentFileIndex)}
+                onEstimateComplete={(price, time, weight) =>
+                  handleEstimateComplete(currentFileIndex, price, time, weight)
+                }
+                onLoadTime={(loadTime) => handleLoadTime(currentFileIndex, loadTime)}
+              />
+            </div>
 
             <Pagination className="absolute bottom-0 mb-4">
               <PaginationPrevious onClick={handleNextFile} />
