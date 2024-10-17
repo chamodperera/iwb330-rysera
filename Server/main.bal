@@ -1,34 +1,44 @@
 import ballerina/http;
 import ballerina/log;
-import Server.supabase;
+// import ballerina/jwt;
+// import Server.supabase;
+import Server.db;
+import Server.utils;
 
-// Define the list of valid API keys
-configurable string[] validApiKeys = ?;
+configurable string[] validApiKeys = ?; //valid api keys
+configurable string mongoDBConnectionString = ?; //mongodb connection string
 
-configurable string supabaseRef = ?;
-configurable string supabaseSecret = ?;
+//define mongoDB database
+final db:Database db = check new(mongoDBConnectionString);
+final utils:googleService googleService = check new();
 
-//define the supabase service
-final supabase:SupabaseService supabaseService = check new(supabaseRef, supabaseSecret);
-
+http:CorsConfig corsConfig = {
+    allowOrigins: ["http://localhost:5173"],
+    allowCredentials: true,
+    allowHeaders: [ "X-Api-Key", "Content-Type"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    maxAge: 3600
+};
 // Define the request interceptor class
 service class RequestInterceptor {
     *http:RequestInterceptor;
 
     isolated resource function 'default [string... path](
             http:RequestContext ctx,
-            @http:Header {name: "Authorization"} string|() jwtToken,
-            @http:Header {name: "x-api-key"} string apiKey)
+            http:Request req,
+            @http:Header {name: "X-Api-Key"} string|() apiKey)
         returns http:Unauthorized|http:NextService|error? {
         
         // string reqPath = from string p in path select "/"+p;
-
+        if req.method == http:OPTIONS {
+            return ctx.next();
+        }
 
         // Check if API key is valid
         boolean isValidKey = false;
         foreach string validKey in validApiKeys {
             if apiKey == validKey {
-                log:printInfo("Authentication successful for key: " + apiKey);
+                log:printInfo("Authentication successful for key: " + <string>apiKey);
                 isValidKey = true;
                 break;
             }
@@ -39,31 +49,15 @@ service class RequestInterceptor {
             };
         }
 
-        //check jwt token
-        // if reqPath != "/googleLogin" {
-        //     if jwtToken is string {
-        //         json|error result = firebaseService.validateJwtToken(jwtToken);
-        //         if result is json {
-        //             log:printInfo("JWT Token is valid");
-        //             ctx.set("jwtClaims", result);
-        //         } else {
-        //             return <http:Unauthorized> {
-        //                 body: "Invalid JWT Token"
-        //             };
-        //         }
-        //     } else {
-        //         return <http:Unauthorized> {
-        //             body: "JWT Token not found"
-        //         };
-        //     }
-        // }
-
-        // Call the next service in the pipeline
         return ctx.next();
     }
 }
-    
+@http:ServiceConfig {
+    cors: corsConfig
+}
+
 service http:InterceptableService / on new http:Listener(9090) {
+    
     public function createInterceptors() returns RequestInterceptor {
         return new RequestInterceptor();
     }
@@ -73,25 +67,43 @@ service http:InterceptableService / on new http:Listener(9090) {
         return "Hello, World!";
     }
 
-    resource function post googleLogin(@http:Payload json jsonObj) returns json|http:Unauthorized|error {
-        string accessToken = "";
-        var accessTokenValue = jsonObj.access_token;
-        if accessTokenValue is string {
-            accessToken = accessTokenValue.toString();
+    resource function get getUser(@http:Query string jwt) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+        if result is json {
+           //check if user exists in the database
+           db:User|() user = check db.getUser(check result.sub);
+              if (user is db:User) {
+                return user;
+              }else{
+                return ();
+              }
         } else {
-            return <http:Unauthorized>{
-                body:"No access token provided"
-            };
+            return result;
         }
-        json|http:Unauthorized|error result = supabaseService.googleLogin(accessToken);
-        return result;
     }
 
 
+    resource function post registerUser(@http:Query string jwt,db:UserData userData) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+
+        if result is json {
+            db:User user = {
+                uid: check result.sub,
+                email: check result.email,
+                name: userData.name,
+                avatar: check result.picture,
+                organization: userData.organization,
+                contact: userData.contact
+            };
+
+            //add user to the database
+            check  db.addUsers(user);
+            return user;
+        } else {
+            return result;
+        }
+    }
+
 }
 
-// public function main() {
-//     string apiKey = utils:generateApiKey();
-//     log:printInfo("Generated API Key: " + apiKey);
-// }
 
