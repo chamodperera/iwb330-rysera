@@ -1,4 +1,5 @@
 import ballerinax/mongodb;
+// import ballerina/log;
 
 public isolated class Database {
     final string connectionString;
@@ -33,13 +34,28 @@ public isolated class Database {
         check ordersCollection->insertMany(newOrders);
     }
 
-    public isolated function getOrders(string uid) returns stream<Order,error?>|error? {
-        mongodb:Collection ordersCollection = check self.db->getCollection("orders");
+    public isolated function getOrders(string uid) returns Order[]|error? {
+    mongodb:Collection ordersCollection = check self.db->getCollection("orders");
+    
+    // Create a stream of orders based on the uid
+    stream<Order, error?>|error? findResult = check ordersCollection->find({
+        "uid": uid
+    });
 
-        stream<Order,error?>|() result = check ordersCollection->find({
-            "uid": uid
-        });
-
-        return result;
+    Order[] result = [];
+    if findResult is stream<Order, error?> {
+        check from Order i in findResult
+            do {
+                result.push(i);
+            };
+    } else {
+        return findResult;
     }
+    if result.length() != 1 {
+        return error(string `Failed to fetch orders`);
+    }
+
+    return result;
+}
+
 }

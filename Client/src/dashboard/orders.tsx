@@ -3,85 +3,72 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const invoices = [
-  {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-];
+import { Order } from "@/models";
+import { getOrders } from "@/services/order";
+import { useEffect, useState } from "react";
 
 export function Orders() {
+  const [currOrders, setOrders] = useState<Order[]>([]); // Ensure the default state is an empty array
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const orders = await getOrders();
+      if (orders) {
+        setOrders(orders);
+      }
+      console.log("orders", orders);
+    };
+
+    fetchOrders();
+  }, []);
+
   return (
-    <Table>
-      <TableCaption>A list of your recent invoices.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Invoice</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Method</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {invoices.map((invoice) => (
-          <TableRow key={invoice.invoice}>
-            <TableCell className="font-medium">{invoice.invoice}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
-            <TableCell>{invoice.paymentMethod}</TableCell>
-            <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+    <div className="max-w-[1440px] mx-auto">
+      {/* Title */}
+      <h2 className="text-2xl font-bold mb-4">Your Orders</h2>
+
+      <Table>
+        <TableCaption>A list of your recent invoices.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Print Time</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead className="text-right">Status</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell colSpan={3}>Total</TableCell>
-          <TableCell className="text-right">$2,500.00</TableCell>
-        </TableRow>
-      </TableFooter>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {currOrders.length > 0 ? (
+            currOrders.map((order, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  {order.orderDate.replace(
+                    /(\d{4})-(\d{2})-(\d{2}).*/,
+                    "$2/$3/$1"
+                  )}
+                </TableCell>
+                <TableCell>{order.fileName}</TableCell>
+                <TableCell>{order.printTime}</TableCell>
+                <TableCell>{order.price}</TableCell>
+                <TableCell className="text-right font-semibold text-base">
+                  {order.status}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center">
+                No orders found.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

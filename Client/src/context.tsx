@@ -28,7 +28,6 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       const jwtToken = sessionStorage.getItem("googleAuthToken");
       if (jwtToken) {
         const loggedInUser = await handleLogin();
-        console.log("loggedInUser", loggedInUser);
         setUser(loggedInUser);
       }
     };

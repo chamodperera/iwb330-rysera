@@ -190,16 +190,17 @@ service http:InterceptableService / on new http:Listener(9090) {
         }
     }
 
-    resource function get getOrders(string uid) returns json|http:Unauthorized|error {
-            stream<db:Order,error?>|error? orders = db.getOrders(uid);
-            if orders is stream<db:Order> {
-                json[] orderList = [];
-                foreach db:Order item in orders {
-                    orderList.push(item);
-                }
-                return orderList;
+    resource function get getOrders(@http:Query string jwt) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+        if result is json {
+            db:Order[]|error? orders = db.getOrders(check result.sub);
+            if orders is db:Order[] {
+                return orders;
             } else {
                 return error("Failed to retrieve orders");
+            }
+        } else {
+            return error("Failed to retrieve orders");
         }
     }
 
