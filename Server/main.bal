@@ -178,6 +178,31 @@ service http:InterceptableService / on new http:Listener(9090) {
         return error("No file found in the request");
     }
 
+    resource function post setOrders(@http:Query string jwt,db:Order[] newOrders) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+
+        if result is json {
+            //add user to the database
+            check  db.addOrders(newOrders);
+            return "order added successfully";
+        } else {
+            return result;
+        }
+    }
+
+    resource function get getOrders(string uid) returns json|http:Unauthorized|error {
+            stream<db:Order,error?>|error? orders = db.getOrders(uid);
+            if orders is stream<db:Order> {
+                json[] orderList = [];
+                foreach db:Order item in orders {
+                    orderList.push(item);
+                }
+                return orderList;
+            } else {
+                return error("Failed to retrieve orders");
+        }
+    }
+
     resource function post estimate(@http:Payload json jsonObj) returns json|error {
         string url = check jsonObj.url;
         float weight = check jsonObj.weight;
@@ -205,65 +230,65 @@ service http:InterceptableService / on new http:Listener(9090) {
         }
     }
 
-resource function post createQuotation(@http:Payload json payload) returns json|error {
-    // Convert the payload to a map<json> for easier key checking
-    map<json> jsonObj = check payload.ensureType();
+    resource function post createQuotation(@http:Payload json payload) returns json|error {
+        // Convert the payload to a map<json> for easier key checking
+        map<json> jsonObj = check payload.ensureType();
 
-    // Validate the presence of required fields
-    if !jsonObj.hasKey("customer") {
-        return error("Missing 'customer' field in request payload");
-    }
-    if !jsonObj.hasKey("products") {
-        return error("Missing 'products' field in request payload");
-    }
-
-    // Parse the request payload
-    string customer = check jsonObj.get("customer").ensureType();
-    json[] productsJson = check jsonObj.get("products").ensureType();
-
-    Product[] products = [];
-    foreach json productJson in productsJson {
-        map<json> product = check productJson.ensureType();
-        
-        string name = check product.get("name").ensureType();
-        if name == "" {
-            return error("Invalid product name");
+        // Validate the presence of required fields
+        if !jsonObj.hasKey("customer") {
+            return error("Missing 'customer' field in request payload");
         }
-        
-        int quantity = check product.get("quantity").ensureType();
-        if quantity < 0 {
-            return error("Invalid product quantity");
+        if !jsonObj.hasKey("products") {
+            return error("Missing 'products' field in request payload");
         }
-        
-        decimal rate = check product.get("rate").ensureType();
-        if rate < 0.0d {
-            return error("Invalid product rate");
+
+        // Parse the request payload
+        string customer = check jsonObj.get("customer").ensureType();
+        json[] productsJson = check jsonObj.get("products").ensureType();
+
+        Product[] products = [];
+        foreach json productJson in productsJson {
+            map<json> product = check productJson.ensureType();
+            
+            string name = check product.get("name").ensureType();
+            if name == "" {
+                return error("Invalid product name");
+            }
+            
+            int quantity = check product.get("quantity").ensureType();
+            if quantity < 0 {
+                return error("Invalid product quantity");
+            }
+            
+            decimal rate = check product.get("rate").ensureType();
+            if rate < 0.0d {
+                return error("Invalid product rate");
+            }
+            
+            products.push({name, quantity, rate});
         }
-        
-        products.push({name, quantity, rate});
-    }
 
-    // Call the createQuotation function
-    byte[]|error quotation = check quotation_generator.createQuotation(customer, products);
+        // Call the createQuotation function
+        byte[]|error quotation = check quotation_generator.createQuotation(customer, products);
 
-    // upload the quotation to google drive
-    if quotation is byte[] {
-        drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
-        if uploadedFileResult is drive:File {
-            string fileID = uploadedFileResult.id.toString();
-            string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
-            json response = {
-                "url": url
-            };
-            return response;
+        // upload the quotation to google drive
+        if quotation is byte[] {
+            drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
+            if uploadedFileResult is drive:File {
+                string fileID = uploadedFileResult.id.toString();
+                string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
+                json response = {
+                    "url": url
+                };
+                return response;
+            } else {
+                return error("Quotation upload failed: " + uploadedFileResult.toString());
+            }
         } else {
-            return error("Quotation upload failed: " + uploadedFileResult.toString());
+            return error("Quotation generation failed: " + quotation.toString());
         }
-    } else {
-        return error("Quotation generation failed: " + quotation.toString());
-    }
 
-}
+    }
 
 
 

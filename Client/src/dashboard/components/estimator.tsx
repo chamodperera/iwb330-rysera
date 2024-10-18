@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ButtonLoading } from "@/components/ui/loadingButton";
 import { EstimatedValuesCard } from "@/components/estimated-values-card";
-import { getEstimate, uploadFile } from "../../services/estimator";
+import { getEstimate } from "../../services/estimator";
 
 interface EstimatorProps {
   unit: string;
@@ -17,17 +17,17 @@ interface EstimatorProps {
   uploadedVolume: number;
 }
 
-const Estimator: React.FC<EstimatorProps> = ({ 
+const Estimator: React.FC<EstimatorProps> = ({
   unit,
   status,
   isEstimating,
-  estimatedValues, 
-  loadTime, 
-  onEstimateStart, 
-  onEstimateComplete, 
+  estimatedValues,
+  loadTime,
+  onEstimateStart,
+  onEstimateComplete,
   onLoadTime,
   uploadedUrl,
-  uploadedVolume
+  uploadedVolume,
 }) => {
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +66,7 @@ const Estimator: React.FC<EstimatorProps> = ({
           size="lg"
           className="mb-6"
           onClick={handleEstimate}
-          disabled={status !== 'uploaded'}
+          disabled={status !== "uploaded"}
         >
           Estimate Price
         </Button>

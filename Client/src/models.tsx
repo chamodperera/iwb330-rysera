@@ -13,6 +13,15 @@ export interface User {
   contact: string;
 }
 
+export interface Order {
+  orderDate: string;
+  uid: string;
+  fileName: string;
+  status: string;
+  printTime: string;
+  price: string;
+}
+
 export interface EstimateResponse {
   price: number;
   time: string;

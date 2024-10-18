@@ -5,13 +5,15 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { User } from "./models";
+import { User, Order } from "./models";
 import { handleLogin } from "./services/auth";
 
 // Define the context value type
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  orders: Order[];
+  setOrders: (orders: Order[]) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -19,18 +21,22 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Define the provider component
 const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const loggedInUser = await handleLogin();
-      console.log("loggedInUser", loggedInUser);
-      setUser(loggedInUser);
+      const jwtToken = sessionStorage.getItem("googleAuthToken");
+      if (jwtToken) {
+        const loggedInUser = await handleLogin();
+        console.log("loggedInUser", loggedInUser);
+        setUser(loggedInUser);
+      }
     };
     fetchUser();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, orders, setOrders }}>
       {children}
     </UserContext.Provider>
   );

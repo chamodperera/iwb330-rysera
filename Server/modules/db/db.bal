@@ -27,4 +27,19 @@ public isolated class Database {
 
         return result;
     }
+
+    public isolated function addOrders(Order[] newOrders) returns error? {
+        mongodb:Collection ordersCollection = check self.db->getCollection("orders");
+        check ordersCollection->insertMany(newOrders);
+    }
+
+    public isolated function getOrders(string uid) returns stream<Order,error?>|error? {
+        mongodb:Collection ordersCollection = check self.db->getCollection("orders");
+
+        stream<Order,error?>|() result = check ordersCollection->find({
+            "uid": uid
+        });
+
+        return result;
+    }
 }
