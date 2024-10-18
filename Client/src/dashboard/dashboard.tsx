@@ -84,7 +84,7 @@ export default function Dashboard() {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
-      const newFileStates: FileState[] = newFiles.map(file => ({
+      const newFileStates: FileState[] = newFiles.map((file) => ({
         file,
         status: 'idle',
         uploadProgress: 0,
@@ -118,7 +118,9 @@ export default function Dashboard() {
     event.preventDefault();
     setDragActive(false);
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      handleFileChange({ target: { files: event.dataTransfer.files } } as React.ChangeEvent<HTMLInputElement>);
+      handleFileChange({
+        target: { files: event.dataTransfer.files },
+      } as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
@@ -132,7 +134,7 @@ export default function Dashboard() {
   };
 
   const handleLoadTime = (index: number, loadTime: string) => {
-    setLoadTimes(prevTimes => {
+    setLoadTimes((prevTimes) => {
       const newTimes = [...prevTimes];
       newTimes[index] = loadTime;
       return newTimes;
@@ -146,7 +148,12 @@ export default function Dashboard() {
     }));
   };
 
-  const handleEstimateComplete = (index: number, price: number, time: string, weight: number) => {
+  const handleEstimateComplete = (
+    index: number,
+    price: number,
+    time: string,
+    weight: number
+  ) => {
     setEstimatedValues((prevValues) => ({
       ...prevValues,
       [index]: { price, time, weight },

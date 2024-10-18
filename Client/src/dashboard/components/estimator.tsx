@@ -26,7 +26,7 @@ const Estimator: React.FC<EstimatorProps> = ({
   onEstimateComplete, 
   onLoadTime,
   uploadedUrl,
-  uploadedVolume
+  uploadedVolume,
 }) => {
   const [error, setError] = useState<string | null>(null);
   const status = fileState.status;
@@ -75,7 +75,7 @@ const Estimator: React.FC<EstimatorProps> = ({
           size="lg"
           className="mb-6"
           onClick={handleEstimate}
-          disabled={status !== 'uploaded'}
+          disabled={status !== "uploaded"}
         >
           Estimate Price
         </Button>

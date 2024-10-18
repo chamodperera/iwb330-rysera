@@ -14,3 +14,12 @@ public type User record {|
     string organization;
     string contact;
 |};
+
+public type Order record {|
+    string orderDate;
+    string uid;
+    string fileName;
+    string status;
+    string printTime;
+    string price;
+|};

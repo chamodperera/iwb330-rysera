@@ -178,6 +178,32 @@ service http:InterceptableService / on new http:Listener(9090) {
         return error("No file found in the request");
     }
 
+    resource function post setOrders(@http:Query string jwt,db:Order[] newOrders) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+
+        if result is json {
+            //add user to the database
+            check  db.addOrders(newOrders);
+            return "order added successfully";
+        } else {
+            return result;
+        }
+    }
+
+    resource function get getOrders(@http:Query string jwt) returns json|http:Unauthorized|error {
+        json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
+        if result is json {
+            db:Order[]|error? orders = db.getOrders(check result.sub);
+            if orders is db:Order[] {
+                return orders;
+            } else {
+                return error("Failed to retrieve orders");
+            }
+        } else {
+            return error("Failed to retrieve orders");
+        }
+    }
+
     resource function post estimate(@http:Payload json jsonObj) returns json|error {
         string url = check jsonObj.url;
         float weight = check jsonObj.weight;
@@ -205,9 +231,9 @@ service http:InterceptableService / on new http:Listener(9090) {
         }
     }
 
-resource function post createQuotation(@http:Payload json payload) returns json|error {
-    // Convert the payload to a map<json> for easier key checking
-    map<json> jsonObj = check payload.ensureType();
+    resource function post createQuotation(@http:Payload json payload) returns json|error {
+        // Convert the payload to a map<json> for easier key checking
+        map<json> jsonObj = check payload.ensureType();
 
     // Validate the presence of required fields
     if !jsonObj.hasKey("customer") {
@@ -225,27 +251,27 @@ resource function post createQuotation(@http:Payload json payload) returns json|
     string email = check jsonObj.get("email").ensureType();
     json[] productsJson = check jsonObj.get("products").ensureType();
 
-    Product[] products = [];
-    foreach json productJson in productsJson {
-        map<json> product = check productJson.ensureType();
-        
-        string name = check product.get("name").ensureType();
-        if name == "" {
-            return error("Invalid product name");
+        Product[] products = [];
+        foreach json productJson in productsJson {
+            map<json> product = check productJson.ensureType();
+            
+            string name = check product.get("name").ensureType();
+            if name == "" {
+                return error("Invalid product name");
+            }
+            
+            int quantity = check product.get("quantity").ensureType();
+            if quantity < 0 {
+                return error("Invalid product quantity");
+            }
+            
+            decimal rate = check product.get("rate").ensureType();
+            if rate < 0.0d {
+                return error("Invalid product rate");
+            }
+            
+            products.push({name, quantity, rate});
         }
-        
-        int quantity = check product.get("quantity").ensureType();
-        if quantity < 0 {
-            return error("Invalid product quantity");
-        }
-        
-        decimal rate = check product.get("rate").ensureType();
-        if rate < 0.0d {
-            return error("Invalid product rate");
-        }
-        
-        products.push({name, quantity, rate});
-    }
 
     // Call the createQuotation function
     json|error quotation = check quotation_generator.createQuotation(email,customer, products);
