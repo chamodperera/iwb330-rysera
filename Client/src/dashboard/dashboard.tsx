@@ -1,12 +1,6 @@
 import React, { useEffect,useState } from "react";
 import { PlusIcon, TrashIcon, UploadCloud } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import PLA from "../assets/PLA.png";
 import ABS from "../assets/ABS.webp";
@@ -15,15 +9,18 @@ import TPU from "../assets/TPU.png";
 import STLViewer from "./components/STLViewer";
 import { Button } from "@/components/ui/button";
 import Estimator from "./components/estimator";
-import axios from 'axios';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import axios from 'axios';import {Pagination,PaginationContent,PaginationItem,PaginationLink,PaginationNext,PaginationPrevious,} from "@/components/ui/pagination";
+import { getEstimate, uploadFile } from "../services/estimator";
+import PriceSummary from "./components/priceSummery";
+
+interface FileState {
+  file: File;
+  status: 'idle' | 'uploading' | 'uploaded' | 'error' | 'estimating' | 'estimated';
+  uploadProgress: number;
+  url?: string;
+  volume?: number;
+  isEstimating?: boolean; 
+}
 
 const materialImages: { [key: string]: string } = {
   PLA: PLA,
@@ -33,21 +30,68 @@ const materialImages: { [key: string]: string } = {
 };
 
 export default function Dashboard() {
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [loadingStates, setLoadingStates] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [estimatedPrices, setEstimatedPrices] = useState<{
-    [key: number]: number | null;
-  }>({});
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [estimatedValues, setEstimatedValues] = useState<{[key: number]: { price: number; time: string; weight: number } | null;}>({});
+  const [loadTimes, setLoadTimes] = useState<string[]>([]);
+  
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
-      setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      setCurrentFileIndex(uploadedFiles.length); // Show the newly added file
+      const newFileStates: FileState[] = newFiles.map(file => ({
+        file,
+        status: 'idle',
+        uploadProgress: 0
+      }));
+      
+      setFileStates(prevStates => {
+        const updatedStates = [...prevStates, ...newFileStates];
+        // Start uploading each new file after state update
+        newFileStates.forEach((_, index) => {
+          upload(prevStates.length + index, updatedStates);
+        });
+        return updatedStates;
+      });
+
+      setCurrentFileIndex(fileStates.length);
+      setLoadTimes(prevTimes => [...prevTimes, ...newFiles.map(() => '')]);
+    }
+  };
+
+  const upload = async (index: number, currentFileStates: FileState[]) => {
+    setFileStates(prevStates => {
+      const newStates = [...prevStates];
+      newStates[index] = { ...newStates[index], status: 'uploading' };
+      return newStates;
+    });
+
+    try {
+      const result = await uploadFile(currentFileStates[index].file, (progress: any) => {
+        setFileStates(prevStates => {
+          const newStates = [...prevStates];
+          newStates[index] = { ...newStates[index], uploadProgress: progress };
+          return newStates;
+        });
+      });
+
+      setFileStates(prevStates => {
+        const newStates = [...prevStates];
+        newStates[index] = { 
+          ...newStates[index], 
+          status: 'uploaded', 
+          url: result.url, 
+          volume: result.volume 
+        };
+        return newStates;
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setFileStates(prevStates => {
+        const newStates = [...prevStates];
+        newStates[index] = { ...newStates[index], status: 'error' };
+        return newStates;
+      });
     }
   };
 
@@ -65,28 +109,37 @@ export default function Dashboard() {
     event.preventDefault();
     setDragActive(false);
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(event.dataTransfer.files);
-      setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      setCurrentFileIndex(uploadedFiles.length); // Show the newly added file
+      handleFileChange({ target: { files: event.dataTransfer.files } } as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
   const handleNextFile = () => {
-    setCurrentFileIndex((prevIndex) => (prevIndex + 1) % uploadedFiles.length);
+    setCurrentFileIndex((prevIndex) => (prevIndex + 1) % fileStates.length);
   };
-
   const handleAddFile = () => {
     document.getElementById("fileInput")?.click();
   };
 
-  const handleEstimatePrice = (index: number) => {
-    setLoadingStates((prevStates) => ({ ...prevStates, [index]: true }));
-    // Simulate API call or price estimation process
-    setTimeout(() => {
-      const price = Math.random() * 100; // Simulated price
-      setLoadingStates((prevStates) => ({ ...prevStates, [index]: false }));
-      setEstimatedPrices((prevPrices) => ({ ...prevPrices, [index]: price }));
-    }, 2000);
+  const handleLoadTime = (index: number, loadTime: string) => {
+    setLoadTimes(prevTimes => {
+      const newTimes = [...prevTimes];
+      newTimes[index] = loadTime;
+      return newTimes;
+    });
+  };
+
+  const handleEstimateStart = (index: number) => {
+    setEstimatedValues((prevValues) => ({
+      ...prevValues,
+      [index]: null,
+    }));
+  };
+
+  const handleEstimateComplete = (index: number, price: number, time: string, weight: number) => {
+    setEstimatedValues((prevValues) => ({
+      ...prevValues,
+      [index]: { price, time, weight },
+    }));
   };
   
   interface Material {
@@ -123,6 +176,7 @@ export default function Dashboard() {
   };
 
 
+
   return (
     <div className="flex gap-4 h-[80vh]">
       {/* PLA Info Card (Left) */}
@@ -151,27 +205,20 @@ export default function Dashboard() {
       {/* Upload Area or STL Viewer (Center) */}
       <div className="flex flex-row flex-grow flex-wrap justify-center lg:flex-nowrap">
       <div
-        className={
-          "flex flex-col items-center justify-center w-full col-span-1 border rounded-lg relative"
-        }
+        className="flex flex-col items-center justify-center w-full col-span-1 border rounded-lg relative"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {uploadedFiles.length > 0 ? (
+        {fileStates.length > 0 ? (
           <>
             <div className="flex place-self-end m-4 absolute top-0">
               <Button
                 variant="outline"
                 size="icon2"
                 onClick={() => {
-                  const newFiles = uploadedFiles.filter(
-                    (_, index) => index !== currentFileIndex
-                  );
-                  setUploadedFiles(newFiles);
-                  setCurrentFileIndex(
-                    Math.min(currentFileIndex, newFiles.length - 1)
-                  );
+                  setFileStates(prevStates => prevStates.filter((_, index) => index !== currentFileIndex));
+                  setCurrentFileIndex(prevIndex => Math.min(prevIndex, fileStates.length - 2));
                 }}
               >
                 <TrashIcon color="red" className="h-8 w-8" />
@@ -179,8 +226,8 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 size="icon2"
-                onClick={handleAddFile}
                 className="ml-2"
+                onClick={handleAddFile}
               >
                 <PlusIcon className="h-8 w-8" />
                 <input
@@ -194,24 +241,61 @@ export default function Dashboard() {
               </Button>
             </div>
 
-            <STLViewer file={uploadedFiles[currentFileIndex]} />
-            {uploadedFiles.map((file, index) => (
-              <div key={index} className="absolute bottom-16">
-                {index === currentFileIndex && (
-                  <Estimator
-                    file={file}
-                    loading={loadingStates[index] || false}
-                    estimatedPrice={estimatedPrices[index] || null}
-                    onEstimate={() => handleEstimatePrice(index)}
-                  />
-                )}
-              </div>
-            ))}
+            {fileStates[currentFileIndex].status === 'uploading' ? (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <p className="mt-4">Uploading: {fileStates[currentFileIndex].uploadProgress.toFixed(0)}%</p>
+            </div>
+          ) : fileStates[currentFileIndex].status === 'uploaded' ? (
+            <STLViewer file={fileStates[currentFileIndex].file} />
+          ) : fileStates[currentFileIndex].status === 'error' ? (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <p className="text-red-500">Error uploading file. Please try again.</p>
+            </div>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <p>Preparing your file...</p>
+            </div>
+          )}
+
+<div className="absolute bottom-16">
+  <Estimator
+    unit="mm"
+    status={fileStates[currentFileIndex].status}
+    isEstimating={fileStates[currentFileIndex].isEstimating}
+    estimatedValues={estimatedValues[currentFileIndex]}
+    loadTime={loadTimes[currentFileIndex]}
+    onEstimateStart={() => {
+      setFileStates(prevStates => {
+        const newStates = [...prevStates];
+        newStates[currentFileIndex] = {
+          ...newStates[currentFileIndex],
+          isEstimating: true
+        };
+        return newStates;
+      });
+      handleEstimateStart(currentFileIndex);
+    }}
+    onEstimateComplete={(price, time, weight) => {
+      setFileStates(prevStates => {
+        const newStates = [...prevStates];
+        newStates[currentFileIndex] = {
+          ...newStates[currentFileIndex],
+          isEstimating: false
+        };
+        return newStates;
+      });
+      handleEstimateComplete(currentFileIndex, price, time, weight);
+    }}
+    onLoadTime={(loadTime) => handleLoadTime(currentFileIndex, loadTime)}
+    uploadedUrl={fileStates[currentFileIndex].url || ''}
+    uploadedVolume={fileStates[currentFileIndex].volume || 0}
+  />
+</div>
 
             <Pagination className="absolute bottom-0 mb-4">
               <PaginationPrevious onClick={handleNextFile} />
               <PaginationContent>
-                {uploadedFiles.map((_, index) => (
+                {fileStates.map((_, index) => (
                   <PaginationItem key={index}>
                     <PaginationLink
                       isActive={index === currentFileIndex}
@@ -318,6 +402,8 @@ export default function Dashboard() {
               </SelectContent>
             </Select>
           </div>
+
+          <PriceSummary fileStates={fileStates} estimatedValues={estimatedValues} />
         </div>
       </div>
     </div>

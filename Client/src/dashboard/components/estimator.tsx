@@ -1,46 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { ButtonLoading } from '@/components/ui/loadingButton';
-import { EstimatedValuesCard } from '@/components/estimated-values-card';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ButtonLoading } from "@/components/ui/loadingButton";
+import { EstimatedValuesCard } from "@/components/estimated-values-card";
+import { getEstimate, uploadFile } from "../../services/estimator";
 
 interface EstimatorProps {
-  file: File;
-  loading: boolean;
-  estimatedPrice: number | null;
-  onEstimate: () => void;
+  unit: string;
+  status: string;
+  isEstimating: boolean | undefined;
+  loadTime: string;
+  estimatedValues: { price: number; time: string; weight: number } | null;
+  onEstimateStart?: () => void;
+  onEstimateComplete?: (price: number, time: string, weight: number) => void;
+  onLoadTime?: (loadTime: string) => void;
+  uploadedUrl: string;
+  uploadedVolume: number;
 }
 
-const Estimator: React.FC<EstimatorProps> = ({ file, loading, estimatedPrice, onEstimate }) => {
-  const [localLoading, setLocalLoading] = useState(loading);
-  const [localEstimatedPrice, setLocalEstimatedPrice] = useState<number | null>(estimatedPrice);
+const Estimator: React.FC<EstimatorProps> = ({ 
+  unit,
+  status,
+  isEstimating,
+  estimatedValues, 
+  loadTime, 
+  onEstimateStart, 
+  onEstimateComplete, 
+  onLoadTime,
+  uploadedUrl,
+  uploadedVolume
+}) => {
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Reset state when file changes
-    setLocalLoading(loading);
-    setLocalEstimatedPrice(estimatedPrice);
-  }, [file, loading, estimatedPrice]);
+  const handleEstimate = async () => {
+    if (estimatedValues) {
+      return;
+    }
 
-  const handleEstimatePrice = () => {
-    setLocalLoading(true);
-    onEstimate();
+    onEstimateStart?.();
+    setError(null);
+
+    const startTime = performance.now();
+
+    try {
+      if (unit === "mm") {
+        uploadedVolume = uploadedVolume / 1000;
+      }
+      const weight = uploadedVolume * 1.25;
+      const estimateResult = await getEstimate(uploadedUrl, weight);
+
+      onEstimateComplete?.(estimateResult.price, estimateResult.time, weight);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      const endTime = performance.now();
+      const duration = ((endTime - startTime) / 1000).toFixed(2);
+      onLoadTime?.(duration);
+    }
   };
 
   return (
     <div>
-      {!localLoading && localEstimatedPrice === null && (
+      {!estimatedValues && !isEstimating && (
         <Button
           variant="default"
           size="lg"
           className="mb-6"
-          onClick={handleEstimatePrice}
+          onClick={handleEstimate}
+          disabled={status !== 'uploaded'}
         >
           Estimate Price
         </Button>
       )}
-      {localLoading && <ButtonLoading />}
-      {localEstimatedPrice !== null && (
-        <EstimatedValuesCard />
+      {isEstimating && !estimatedValues && <ButtonLoading />}
+      {estimatedValues && (
+        <EstimatedValuesCard
+          loadTime={loadTime}
+          estimatedPrice={estimatedValues.price}
+          printDuration={estimatedValues.time}
+          materialWeight={estimatedValues.weight.toFixed(2)}
+        />
       )}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>
   );
 };
