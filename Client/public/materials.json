@@ -1,0 +1,47 @@
+[
+    {
+      "name": "PLA",
+      "description": "PLA (polylactic acid), is a thermoplastic polymer derived from renewable resources. This feature sets it apart from other commonly used plastics. PLA is great for low cost prototyping, containers, and functional parts under a light load.",
+      "properties": {
+        "Tensile": "26.8 - 70 MPa",
+        "elongation" : "1.9 - 20%",
+        "Flexural": "46 - 88 MPa",
+        "HDT": "50 - 55°C"
+      },
+      "colors": ["White", "Black", "Grey"]
+    },
+    {
+      "name": "PETG",
+      "description": "PETG is a strong, durable plastic similar to ABS but safe for human health. It is chemical- and wear-resistant, making it suitable for outdoor and food-related applications. Made from modified polyethylene terephthalate (PET), PETG is tougher, stiffer, and clearer.",
+      "properties": {
+        "Tensile": "45 - 75 MPa",
+        "elongation" : "2 - 5%",
+        "Flexural": "68 - 72 MPa",
+        "HDT": "70 - 80°C"
+      },
+      "colors": ["White"]
+    },
+    {
+      "name": "ABS",
+      "description": "ABS (Acrylonitrile Butadiene Styrene) is ideal for functional parts and prototypes requiring stronger mechanical properties than PLA. It retains about 80% of the qualities of injection-molded products but is rigid and inflexible, limiting design freedom in FDM printing.",
+      "properties": {
+        "Tensile": "32 - 45 MPa",
+        "elongation" : "4.8 - 20%",
+        "Flexural": "60 - 76 MPa",
+        "HDT": "81 - 95°C"
+      },
+      "colors": ["Black"]
+    },
+    {
+      "name": "TPU",
+      "description": "Thermoplastic polyurethane (TPU) is a common elastic polymer for FDM 3D printing. TPU has a Shore hardness of 85A-95A, offering high flexibility, durability, and strength. It can withstand greater compressive and tensile forces than PLA and ABS.",
+      "properties": {
+        "Tensile": "26 - 55 MPa",
+        "elongation" : "330 - 657%",
+        "Flexural": "72 - 78.7 MPa",
+        "HDT": "40 - 50°C"
+      },
+      "colors": ["White"]
+    }
+  ]
+  
