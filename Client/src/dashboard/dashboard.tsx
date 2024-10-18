@@ -10,7 +10,7 @@ import STLViewer from "./components/STLViewer";
 import { Button } from "@/components/ui/button";
 import Estimator from "./components/estimator";
 import axios from 'axios';import {Pagination,PaginationContent,PaginationItem,PaginationLink,PaginationNext,PaginationPrevious,} from "@/components/ui/pagination";
-import { getEstimate, uploadFile } from "../services/estimator";
+import { uploadFile } from "../services/estimator";
 import PriceSummary from "./components/priceSummery";
 
 interface FileState {
@@ -339,7 +339,7 @@ export default function Dashboard() {
         </div>
       
 
-        <div className="w-full space-y-2 pl-16 pr-16 pt-8 ml-0 lg:pl-2 lg:pr-2 lg:pt-0 lg:ml-4 lg:w-1/4">
+        <div className="flex flex-col w-full space-y-2 pl-16 pr-16 pt-8 ml-0 lg:pl-2 lg:pr-2 lg:pt-0 lg:ml-4 lg:w-1/4">
           {/* Material Type Selector */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -369,10 +369,8 @@ export default function Dashboard() {
                 <SelectValue placeholder="Select quality" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0.12">0.12 - fine</SelectItem>
-                <SelectItem value="0.16">0.16 - optimal</SelectItem>
-                <SelectItem value="0.20">0.20 - standard</SelectItem>
-                <SelectItem value="0.24">0.24 - draft</SelectItem>
+                <SelectItem value="0.20">Standard</SelectItem>
+                <SelectItem value="0.24">High</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -402,8 +400,7 @@ export default function Dashboard() {
               </SelectContent>
             </Select>
           </div>
-
-          <PriceSummary fileStates={fileStates} estimatedValues={estimatedValues} />
+          <PriceSummary fileStates={fileStates} estimatedValues={estimatedValues}/>
         </div>
       </div>
     </div>
