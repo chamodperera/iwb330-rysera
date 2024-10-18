@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Estimator from "./components/estimator";
 import {Pagination,PaginationContent,PaginationItem,PaginationLink,PaginationNext,PaginationPrevious,} from "@/components/ui/pagination";
 import { getEstimate, uploadFile } from "../services/estimator";
+import PriceSummary from "./components/priceSummery";
 
 interface FileState {
   file: File;
@@ -202,7 +203,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center">
-              <p>Preparing to upload...</p>
+              <p>Preparing your file...</p>
             </div>
           )}
 
@@ -339,6 +340,8 @@ export default function Dashboard() {
               </SelectContent>
             </Select>
           </div>
+
+          <PriceSummary fileStates={fileStates} estimatedValues={estimatedValues} />
         </div>
       </div>
     </div>

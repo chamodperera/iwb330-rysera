@@ -7,9 +7,15 @@ import ballerina/http;
 import ballerina/log;
 import Server.db;
 import Server.utils;
+import Server.quotation_generator;
 
 // Define the list of valid API keys
 type Vector [float, float, float];
+public type Product record {
+    string name;
+    int quantity;
+    decimal rate;
+};
 
 configurable string[] validApiKeys = ?; //valid api keys
 configurable string mongoDBConnectionString = ?; //mongodb connection string
@@ -17,6 +23,10 @@ configurable string estimatorApiKey = ?;
 configurable string OAuthRefreshToken = ?;
 configurable string OAuthClientId = ?;
 configurable string OAuthClientSecret = ?;
+configurable string ZohoclientID = ?;
+configurable string ZohoclientSecret = ?;
+configurable string ZohorefreshToken = ?;
+configurable string ZohoorganizationId = ?;
 
 //define mongoDB database
 final db:Database db = check new(mongoDBConnectionString);
@@ -24,6 +34,7 @@ final estimator:estimatorService estimator = check new (estimatorApiKey);
 final google_drive:driverService googleDriveService = check new (OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
 final volume_calculator:VolumeCalculator volume_calculator = new ();
 final utils:googleService googleService = check new();
+final quotation_generator:ZohoQuotationService quotation_generator = check new(ZohoclientID, ZohoclientSecret, ZohorefreshToken, ZohoorganizationId);
 
 http:CorsConfig corsConfig = {
     allowOrigins: ["http://localhost:5173"],
@@ -193,5 +204,67 @@ service http:InterceptableService / on new http:Listener(9090) {
             return error("Estimation failed: " + result.toString());
         }
     }
+
+resource function post createQuotation(@http:Payload json payload) returns json|error {
+    // Convert the payload to a map<json> for easier key checking
+    map<json> jsonObj = check payload.ensureType();
+
+    // Validate the presence of required fields
+    if !jsonObj.hasKey("customer") {
+        return error("Missing 'customer' field in request payload");
+    }
+    if !jsonObj.hasKey("products") {
+        return error("Missing 'products' field in request payload");
+    }
+
+    // Parse the request payload
+    string customer = check jsonObj.get("customer").ensureType();
+    json[] productsJson = check jsonObj.get("products").ensureType();
+
+    Product[] products = [];
+    foreach json productJson in productsJson {
+        map<json> product = check productJson.ensureType();
+        
+        string name = check product.get("name").ensureType();
+        if name == "" {
+            return error("Invalid product name");
+        }
+        
+        int quantity = check product.get("quantity").ensureType();
+        if quantity < 0 {
+            return error("Invalid product quantity");
+        }
+        
+        decimal rate = check product.get("rate").ensureType();
+        if rate < 0.0d {
+            return error("Invalid product rate");
+        }
+        
+        products.push({name, quantity, rate});
+    }
+
+    // Call the createQuotation function
+    byte[]|error quotation = check quotation_generator.createQuotation(customer, products);
+
+    // upload the quotation to google drive
+    if quotation is byte[] {
+        drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
+        if uploadedFileResult is drive:File {
+            string fileID = uploadedFileResult.id.toString();
+            string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
+            json response = {
+                "url": url
+            };
+            return response;
+        } else {
+            return error("Quotation upload failed: " + uploadedFileResult.toString());
+        }
+    } else {
+        return error("Quotation generation failed: " + quotation.toString());
+    }
+
+}
+
+
 
 }

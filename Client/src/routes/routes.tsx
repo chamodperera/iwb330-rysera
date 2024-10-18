@@ -7,7 +7,7 @@ import Dashboard from "@/dashboard/dashboard";
 import DashboardLayout from "@/dashboard/layout";
 import GoogleButton from "@/components/googleButton";
 import { ProfileForm } from "@/components/profileForm";
-// import { Orders } from "@/dashboard/orders";
+import { Orders } from "@/dashboard/orders";
 
 const routes: RouteObject[] = [
   {

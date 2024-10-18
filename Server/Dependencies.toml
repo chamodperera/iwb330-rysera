@@ -26,6 +26,7 @@ modules = [
 	{org = "Rysera", packageName = "Server", moduleName = "Server.db"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.estimator"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.google_drive"},
+	{org = "Rysera", packageName = "Server", moduleName = "Server.quotation_generator"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.utils"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.volume_calculator"}
 ]
@@ -277,7 +278,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "regex"
-version = "1.3.0"
+version = "1.3.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
