@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { ButtonLoading } from "@/components/ui/loadingButton";
 import { EstimatedValuesCard } from "@/components/estimated-values-card";
 import { getEstimate, uploadFile } from "../../services/estimator";
+import { FileState } from "../types";
 
 interface EstimatorProps {
+  fileState: FileState;
   unit: string;
-  status: string;
-  isEstimating: boolean | undefined;
   loadTime: string;
   estimatedValues: { price: number; time: string; weight: number } | null;
   onEstimateStart?: () => void;
@@ -18,9 +18,8 @@ interface EstimatorProps {
 }
 
 const Estimator: React.FC<EstimatorProps> = ({ 
+  fileState,
   unit,
-  status,
-  isEstimating,
   estimatedValues, 
   loadTime, 
   onEstimateStart, 
@@ -30,6 +29,8 @@ const Estimator: React.FC<EstimatorProps> = ({
   uploadedVolume
 }) => {
   const [error, setError] = useState<string | null>(null);
+  const status = fileState.status;
+  const isEstimating = fileState.isEstimating;
 
   const handleEstimate = async () => {
     if (estimatedValues) {
@@ -47,6 +48,14 @@ const Estimator: React.FC<EstimatorProps> = ({
       }
       const weight = uploadedVolume * 1.25;
       const estimateResult = await getEstimate(uploadedUrl, weight);
+
+      if(fileState.quality === "high") {
+        estimateResult.price = estimateResult.price * 1.3;
+      }
+
+      if(fileState.infill){
+        estimateResult.price = estimateResult.price * (1 + (fileState.infill / 80 - 0.25));
+      }
 
       onEstimateComplete?.(estimateResult.price, estimateResult.time, weight);
     } catch (err) {

@@ -213,12 +213,16 @@ resource function post createQuotation(@http:Payload json payload) returns json|
     if !jsonObj.hasKey("customer") {
         return error("Missing 'customer' field in request payload");
     }
+    if !jsonObj.hasKey("email") {
+        return error("Missing 'email' field in request payload");
+    }
     if !jsonObj.hasKey("products") {
         return error("Missing 'products' field in request payload");
     }
 
     // Parse the request payload
     string customer = check jsonObj.get("customer").ensureType();
+    string email = check jsonObj.get("email").ensureType();
     json[] productsJson = check jsonObj.get("products").ensureType();
 
     Product[] products = [];
@@ -244,24 +248,30 @@ resource function post createQuotation(@http:Payload json payload) returns json|
     }
 
     // Call the createQuotation function
-    byte[]|error quotation = check quotation_generator.createQuotation(customer, products);
+    json|error quotation = check quotation_generator.createQuotation(email,customer, products);
 
-    // upload the quotation to google drive
-    if quotation is byte[] {
-        drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
-        if uploadedFileResult is drive:File {
-            string fileID = uploadedFileResult.id.toString();
-            string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
-            json response = {
-                "url": url
-            };
-            return response;
-        } else {
-            return error("Quotation upload failed: " + uploadedFileResult.toString());
-        }
+    if quotation is json {
+        return quotation;
     } else {
         return error("Quotation generation failed: " + quotation.toString());
     }
+
+    // upload the quotation to google drive
+    // if quotation is byte[] {
+    //     drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
+    //     if uploadedFileResult is drive:File {
+    //         string fileID = uploadedFileResult.id.toString();
+    //         string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
+    //         json response = {
+    //             "url": url
+    //         };
+    //         return response;
+    //     } else {
+    //         return error("Quotation upload failed: " + uploadedFileResult.toString());
+    //     }
+    // } else {
+    //     return error("Quotation generation failed: " + quotation.toString());
+    // }
 
 }
 
