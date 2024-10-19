@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Order } from "@/models";
 import { useState } from "react";
 import { ConfirmAlert } from "./confirmOrder";
+import Quantity  from "../components/qunatityInput";
 
 interface PriceSummaryProps {
   fileStates: Array<{
@@ -25,6 +26,15 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
   const { user, orders, setOrders } = UseUser();
   const navigate = useNavigate();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [quantities, setQuantities] = useState<number[]>(fileStates.map(() => 1));
+
+  const handleQuantityChange = (index: number, quantity: number) => {
+    setQuantities(prevQuantities => {
+      const newQuantities = [...prevQuantities];
+      newQuantities[index] = quantity;
+      return newQuantities;
+    });
+  };
 
   // Check if at least one file has been estimated
   const hasEstimates = Object.values(estimatedValues).some(
@@ -50,6 +60,7 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
               status: "pending",
               printTime: estimatedValues[index].time,
               price: estimatedValues[index].price.toFixed(2),
+              quantity: quantities[index],
             };
           }
         })
@@ -62,11 +73,8 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
 
   const calculateTotal = () => {
     return Object.values(estimatedValues)
-      .filter(
-        (value): value is { price: number; time: string; weight: number } =>
-          value !== null
-      )
-      .reduce((sum, value) => sum + value.price, 0);
+      .filter((value, index): value is { price: number; time: string; weight: number } => value !== null)
+      .reduce((sum, value, index) => sum + value.price * quantities[index], 0);
   };
 
   return (
@@ -84,6 +92,10 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
               >
                 {estimatedValues[index] && (
                   <>
+                    <Quantity
+                      value={quantities[index]}
+                      onChange={(value) => handleQuantityChange(index, value)}
+                    />
                     <span className="text-sm truncate max-w-[140px]">
                       {fileState.file.name.replace(/\.STL$/i, "")}
                     </span>
@@ -114,6 +126,7 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
           open={isConfirmOpen}
           onOpenChange={setIsConfirmOpen}
           orders={orders}
+          user={user}
         />
       </div>
     </div>

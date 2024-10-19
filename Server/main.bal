@@ -231,7 +231,7 @@ service http:InterceptableService / on new http:Listener(9090) {
         }
     }
 
-    resource function post createQuotation(@http:Payload json payload) returns json|error {
+    resource function post quote(@http:Payload json payload) returns json|error {
         // Convert the payload to a map<json> for easier key checking
         map<json> jsonObj = check payload.ensureType();
 

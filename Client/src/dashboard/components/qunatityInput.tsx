@@ -39,23 +39,23 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
 
   return (
     <div className={`
-      inline-flex items-center rounded-lg border
-      ${focused ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200'}
+      flex flex-row items-center
       ${disabled ? 'opacity-50' : ''}
       bg-white
     `}>
-      <button
+
+<button
         type="button"
         onClick={handleDecrement}
         disabled={disabled || value <= min}
         className={`
-          p-1 text-gray-600 hover:text-gray-900
+          p-0 text-gray-600 hover:text-gray-900
           disabled:opacity-50 disabled:cursor-not-allowed
           transition-colors duration-200
         `}
         aria-label="Decrease quantity"
       >
-        <Minus size={16} />
+        <Minus size={12} />
       </button>
       
       <input
@@ -68,27 +68,30 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
         onBlur={() => setFocused(false)}
         disabled={disabled}
         className={`
-          w-4 text-center text-gray-900 text-sm
+          w-6 text-center text-gray-900 text-sm
           focus:outline-none [-moz-appearance:textfield]
           [&::-webkit-outer-spin-button]:appearance-none
           [&::-webkit-inner-spin-button]:appearance-none
-          disabled:cursor-not-allowed bg-white
+          disabled:cursor-not-allowed bg-white my-2
         `}
       />
-      
-      <button
+
+<button
         type="button"
         onClick={handleIncrement}
         disabled={disabled || value >= max}
         className={`
-          p-1 text-gray-600 hover:text-gray-900
+          p-0 text-gray-600 hover:text-gray-900
           disabled:opacity-50 disabled:cursor-not-allowed
           transition-colors duration-200
         `}
         aria-label="Increase quantity"
       >
-        <Plus size={16} />
+        <Plus size={12} />
       </button>
+      
+
+
     </div>
   );
 };

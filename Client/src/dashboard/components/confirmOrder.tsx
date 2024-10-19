@@ -10,24 +10,37 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Order } from "@/models";
+import { Order, User } from "@/models";
 import { sendOrders } from "@/services/order";
 import { useNavigate } from "react-router-dom";
+import { sendQuote } from "@/services/quote";
+import { UseUser } from "@/context";
 
 interface ConfirmAlertProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   orders: Order[];
+  user: User | null;
 }
 
 export function ConfirmAlert({
   open,
   onOpenChange,
   orders,
+  user,
 }: ConfirmAlertProps) {
   const navigate = useNavigate();
   const handleSendOrder = async () => {
     await sendOrders(orders);
+    await sendQuote({
+      customer: user?.name || "Unknown",
+      email: user?.email || "Unknown",
+      products: orders.map((order) => ({
+        name: order.fileName,
+        rate: parseFloat(order.price),
+        quantity: order.quantity,
+      })),
+    });
   };
 
   return (
@@ -55,7 +68,7 @@ export function ConfirmAlert({
                       {order.fileName}
                     </span>
                     <span className="text-sm font-medium">
-                      Rs.{order.price}
+                      Rs.{order.price} x {order.quantity}
                     </span>
                   </div>
                 ))}
@@ -67,7 +80,7 @@ export function ConfirmAlert({
                   <span className="font-semibold">
                     Rs.
                     {orders
-                      .reduce((sum, order) => sum + parseInt(order.price), 0)
+                      .reduce((sum, order) => sum + parseFloat(order.price) * order.quantity, 0)
                       .toFixed(2)}
                   </span>
                 </div>

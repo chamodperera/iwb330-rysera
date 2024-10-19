@@ -10,7 +10,7 @@ import { SettingsPanel } from './components/settingPanel';
 import { useFileUpload } from './hooks/useFileUpload';
 import STLViewer from "./components/STLViewer";
 import Estimator from "./components/estimator";
-import PriceSummary from "./components/priceSummery";
+import PriceSummary from "./components/priceSummary";
 import { Material, EstimatedValue, FileState } from './types';
 
 // Import material images

@@ -1,4 +1,5 @@
 import ballerina/http;
+import ballerina/io;
 
 # Represents the Zoho Books quotation service
 public isolated class ZohoQuotationService {
@@ -65,6 +66,7 @@ public isolated class ZohoQuotationService {
             );
         }
         responseJson = check response.getJsonPayload();
+        io:print(responseJson);
         json[] contacts = <json[]>check responseJson.contacts;
         foreach var contact in contacts {
         // Search for existing contact

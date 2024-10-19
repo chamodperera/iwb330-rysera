@@ -20,6 +20,7 @@ export interface Order {
   status: string;
   printTime: string;
   price: string;
+  quantity: number;
 }
 
 export interface EstimateResponse {
@@ -30,4 +31,20 @@ export interface EstimateResponse {
 export interface UploadResponse {
   url: string;
   volume: number;
+}
+
+export interface QuoteRequest { 
+  customer: string;
+  email: string;
+  products: Product[];
+}
+
+export interface Product{
+  name: string;
+  rate: number;
+  quantity: number;
+}
+
+export interface QuoteResponse {
+  message: JSON;
 }
