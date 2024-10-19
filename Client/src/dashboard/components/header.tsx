@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UseUser } from "@/userContext";
 import { Button } from "@/components/ui/button";
-<<<<<<< HEAD
 import { useNavigate, useLocation } from "react-router-dom";
-=======
-import { useNavigate , useLocation } from "react-router-dom";
->>>>>>> 22d2b7a45f15cf1a9a1fe9fa56ea138864140552
 
 const Header: React.FC = () => {
   const { user } = UseUser();
@@ -14,19 +10,11 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [buttonText, setButtonText] = useState("View Orders");
 
-<<<<<<< HEAD
-  const handleButtonClick = () => {
-    if (location.pathname === "/dashboard/orders") {
-      navigate("/dashboard");
-    } else {
-      navigate("/dashboard/orders");
-=======
   useEffect(() => {
     if (location.pathname === "/dashboard/orders") {
       setButtonText("Dashboard");
     } else {
       setButtonText("View Orders");
->>>>>>> 22d2b7a45f15cf1a9a1fe9fa56ea138864140552
     }
   }, [location.pathname]);
 

@@ -112,7 +112,6 @@ export function ConfirmAlert({
           </Card>
         </AlertDialogHeader>
         <AlertDialogFooter>
-<<<<<<< HEAD
           {!isProcessing ? (
             <Button onClick={() => onOpenChange(false)} variant="outline">
               Cancel
@@ -136,19 +135,6 @@ export function ConfirmAlert({
                   setIsProcessing(false);
                 }
               }
-=======
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              // handleSendOrder();
-              console.log("Sending to sheet");
-              handleSendQuote();
-              handleSendToSheet();
-              onOpenChange(false);
-              navigate("/dashboard/orders");
->>>>>>> 22d2b7a45f15cf1a9a1fe9fa56ea138864140552
             }}
           >
             {isProcessing ? (
