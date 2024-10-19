@@ -8,6 +8,8 @@ import ballerina/log;
 import Server.db;
 import Server.utils;
 import Server.quotation_generator;
+import Server.google_sheets;
+import ballerina/io;
 
 // Define the list of valid API keys
 type Vector [float, float, float];
@@ -16,6 +18,15 @@ public type Product record {
     int quantity;
     decimal rate;
 };
+
+public type orderData record {|
+    string customerName;
+    string customerEmail;
+    string[] fileNames;
+    string[] fileURLs;
+    int[] quantities;
+    decimal[] prices;    
+|};
 
 configurable string[] validApiKeys = ?; //valid api keys
 configurable string mongoDBConnectionString = ?; //mongodb connection string
@@ -35,6 +46,7 @@ final google_drive:driverService googleDriveService = check new (OAuthRefreshTok
 final volume_calculator:VolumeCalculator volume_calculator = new ();
 final utils:googleService googleService = check new();
 final quotation_generator:ZohoQuotationService quotation_generator = check new(ZohoclientID, ZohoclientSecret, ZohorefreshToken, ZohoorganizationId);
+final google_sheets:sheetsService sheetsService = check new(OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
 
 http:CorsConfig corsConfig = {
     allowOrigins: ["http://localhost:5173"],
@@ -298,9 +310,85 @@ service http:InterceptableService / on new http:Listener(9090) {
     // } else {
     //     return error("Quotation generation failed: " + quotation.toString());
     // }
-
 }
 
+resource function post sendToSheet(http:Caller caller, http:Request req) returns error? {
+        // Convert the payload to a map<json> for easier key checking
+        map<json> jsonObj = check req.getJsonPayload().ensureType();
 
+        // Validate the presence of required fields
+        if !jsonObj.hasKey("customer") {
+            check caller->respond("Missing 'customer' field in request payload");
+            return;
+        }
+        if !jsonObj.hasKey("email") {
+            check caller->respond("Missing 'email' field in request payload");
+            return;
+        }
+        if !jsonObj.hasKey("products") {
+            check caller->respond("Missing 'products' field in request payload");
+            return;
+        }
 
+        // Parse the request payload
+        string customer = check jsonObj.get("customer").ensureType();
+        string email = check jsonObj.get("email").ensureType();
+        json[] productsJson = check jsonObj.get("products").ensureType();
+
+        string[] fileNames = [];
+        string[] fileURLs = [];
+        int[] quantities = [];
+        decimal[] prices = [];
+        foreach json productJson in productsJson {
+            map<json> product = check productJson.ensureType();
+            
+            string name = check product.get("name").ensureType();
+            if name == "" {
+                check caller->respond("Invalid product name");
+                return;
+            }
+
+            string url = check product.get("url").ensureType();
+            if url == "" {
+                check caller->respond("Invalid product url");
+                return;
+            }
+            
+            int quantity = check product.get("quantity").ensureType();
+            if quantity < 0 {
+                check caller->respond("Invalid product quantity");
+                return;
+            }
+            
+            decimal rate = check product.get("rate").ensureType();
+            if rate < 0.0d {
+                check caller->respond("Invalid product rate");
+                return;
+            }
+
+            fileNames.push(name);
+            quantities.push(quantity);
+            prices.push(rate);
+            fileURLs.push(url);
+        }
+            orderData orderData = {
+                customerName: customer,
+                customerEmail: email,
+                fileNames: fileNames,
+                fileURLs: fileURLs,
+                prices: prices,
+                quantities: quantities
+            };
+
+            error? addOrderResult = sheetsService.addOrder("1is2fVRLwfFtmg6Dna-5NFqynw6vhtBAwti53g_qeIdM", "Orders", orderData);
+
+            if addOrderResult is error {
+                check caller->respond("Failed to add order: " + addOrderResult.toString());
+                return;
+            }
+            else {
+                io:println("Order added successfully");
+                return;
+            }
+    }
 }

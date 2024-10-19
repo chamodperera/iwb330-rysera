@@ -21,6 +21,7 @@ export interface Order {
   printTime: string;
   price: string;
   quantity: number;
+  url: string;
 }
 
 export interface EstimateResponse {
@@ -43,8 +44,16 @@ export interface Product{
   name: string;
   rate: number;
   quantity: number;
+  url?: string;
 }
 
 export interface QuoteResponse {
   message: JSON;
 }
+
+export interface SheetsData {
+  customer: string;
+  email: string;
+  products: Product[];
+}
+

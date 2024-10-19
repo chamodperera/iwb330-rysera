@@ -14,7 +14,7 @@ import { Order, User } from "@/models";
 import { sendOrders } from "@/services/order";
 import { useNavigate } from "react-router-dom";
 import { sendQuote } from "@/services/quote";
-import { UseUser } from "@/context";
+import { sendtoSheet } from "@/services/sheets";
 
 interface ConfirmAlertProps {
   open: boolean;
@@ -32,6 +32,9 @@ export function ConfirmAlert({
   const navigate = useNavigate();
   const handleSendOrder = async () => {
     await sendOrders(orders);
+  };
+
+  const handleSendQuote = async () => {
     await sendQuote({
       customer: user?.name || "Unknown",
       email: user?.email || "Unknown",
@@ -41,7 +44,20 @@ export function ConfirmAlert({
         quantity: order.quantity,
       })),
     });
-  };
+  }
+
+  const handleSendToSheet = async () => {
+    await sendtoSheet({
+      customer: user?.name || "Unknown",
+      email: user?.email || "Unknown",
+      products: orders.map((order) => ({
+        name: order.fileName,
+        rate: parseFloat(order.price),
+        quantity: order.quantity,
+        url: order.url,
+      })),
+    });
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -94,9 +110,12 @@ export function ConfirmAlert({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              handleSendOrder();
+              // handleSendOrder();
+              console.log("Sending to sheet");
+              handleSendQuote();
+              handleSendToSheet();
               onOpenChange(false);
-              navigate("/dashboard/orders");
+              // navigate("/dashboard/orders");
             }}
           >
             Confirm Order

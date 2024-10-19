@@ -20,6 +20,7 @@ dependencies = [
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinax", name = "googleapis.drive"},
+	{org = "ballerinax", name = "googleapis.sheets"},
 	{org = "ballerinax", name = "mongodb"}
 ]
 modules = [
@@ -27,6 +28,7 @@ modules = [
 	{org = "Rysera", packageName = "Server", moduleName = "Server.db"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.estimator"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.google_drive"},
+	{org = "Rysera", packageName = "Server", moduleName = "Server.google_sheets"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.quotation_generator"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.utils"},
 	{org = "Rysera", packageName = "Server", moduleName = "Server.volume_calculator"}
@@ -367,6 +369,25 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerinax", packageName = "googleapis.drive", moduleName = "googleapis.drive"}
+]
+
+[[package]]
+org = "ballerinax"
+name = "googleapis.sheets"
+version = "3.5.1"
+dependencies = [
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.array"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "lang.regexp"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "os"},
+	{org = "ballerinai", name = "observe"},
+	{org = "ballerinax", name = "client.config"}
+]
+modules = [
+	{org = "ballerinax", packageName = "googleapis.sheets", moduleName = "googleapis.sheets"}
 ]
 
 [[package]]

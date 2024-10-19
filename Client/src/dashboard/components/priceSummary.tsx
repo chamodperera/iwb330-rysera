@@ -12,6 +12,7 @@ interface PriceSummaryProps {
   fileStates: Array<{
     file: File;
     status: string;
+    url?: string;
   }>;
   estimatedValues: {
     [key: number]: {
@@ -61,6 +62,7 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
               printTime: estimatedValues[index].time,
               price: estimatedValues[index].price.toFixed(2),
               quantity: quantities[index],
+              url: fileState.url,
             };
           }
         })
