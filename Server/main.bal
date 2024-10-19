@@ -1,18 +1,19 @@
+import Server.db;
 import Server.estimator;
 import Server.google_drive;
+import Server.google_sheets;
+import Server.quotation_generator;
+import Server.utils;
 import Server.volume_calculator;
-import ballerina/mime;
-import ballerinax/googleapis.drive;
+
 import ballerina/http;
 import ballerina/log;
-import Server.db;
-import Server.utils;
-import Server.quotation_generator;
-import Server.google_sheets;
-import ballerina/io;
+import ballerina/mime;
+import ballerinax/googleapis.drive;
 
 // Define the list of valid API keys
 type Vector [float, float, float];
+
 public type Product record {
     string name;
     int quantity;
@@ -25,7 +26,7 @@ public type orderData record {|
     string[] fileNames;
     string[] fileURLs;
     int[] quantities;
-    decimal[] prices;    
+    decimal[] prices;
 |};
 
 configurable string[] validApiKeys = ?; //valid api keys
@@ -40,21 +41,22 @@ configurable string ZohorefreshToken = ?;
 configurable string ZohoorganizationId = ?;
 
 //define mongoDB database
-final db:Database db = check new(mongoDBConnectionString);
+final db:Database db = check new (mongoDBConnectionString);
 final estimator:estimatorService estimator = check new (estimatorApiKey);
 final google_drive:driverService googleDriveService = check new (OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
 final volume_calculator:VolumeCalculator volume_calculator = new ();
-final utils:googleService googleService = check new();
-final quotation_generator:ZohoQuotationService quotation_generator = check new(ZohoclientID, ZohoclientSecret, ZohorefreshToken, ZohoorganizationId);
-final google_sheets:sheetsService sheetsService = check new(OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
+final utils:googleService googleService = check new ();
+final quotation_generator:ZohoQuotationService quotation_generator = check new (ZohoclientID, ZohoclientSecret, ZohorefreshToken, ZohoorganizationId);
+final google_sheets:sheetsService sheetsService = check new (OAuthRefreshToken, OAuthClientId, OAuthClientSecret);
 
 http:CorsConfig corsConfig = {
     allowOrigins: ["http://localhost:5173"],
     allowCredentials: true,
-    allowHeaders: [ "X-Api-Key", "Content-Type"],
+    allowHeaders: ["X-Api-Key", "Content-Type"],
     allowMethods: ["GET", "POST", "OPTIONS"],
     maxAge: 3600
 };
+
 // Define the request interceptor class
 service class RequestInterceptor {
     *http:RequestInterceptor;
@@ -64,7 +66,7 @@ service class RequestInterceptor {
             http:Request req,
             @http:Header {name: "X-Api-Key"} string|() apiKey)
         returns http:Unauthorized|http:NextService|error? {
-        
+
         if req.method == http:OPTIONS {
             return ctx.next();
         }
@@ -100,7 +102,7 @@ service class RequestInterceptor {
 }
 
 service http:InterceptableService / on new http:Listener(9090) {
-    
+
     public function createInterceptors() returns RequestInterceptor {
         return new RequestInterceptor();
     }
@@ -113,20 +115,19 @@ service http:InterceptableService / on new http:Listener(9090) {
     resource function get getUser(@http:Query string jwt) returns json|http:Unauthorized|error {
         json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
         if result is json {
-           //check if user exists in the database
-           db:User|() user = check db.getUser(check result.sub);
-              if (user is db:User) {
+            //check if user exists in the database
+            db:User|() user = check db.getUser(check result.sub);
+            if (user is db:User) {
                 return user;
-              }else{
+            } else {
                 return ();
-              }
+            }
         } else {
             return result;
         }
     }
 
-
-    resource function post registerUser(@http:Query string jwt,db:UserData userData) returns json|http:Unauthorized|error {
+    resource function post registerUser(@http:Query string jwt, db:UserData userData) returns json|http:Unauthorized|error {
         json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
 
         if result is json {
@@ -140,7 +141,7 @@ service http:InterceptableService / on new http:Listener(9090) {
             };
 
             //add user to the database
-            check  db.addUsers(user);
+            check db.addUsers(user);
             return user;
         } else {
             return result;
@@ -190,12 +191,12 @@ service http:InterceptableService / on new http:Listener(9090) {
         return error("No file found in the request");
     }
 
-    resource function post setOrders(@http:Query string jwt,db:Order[] newOrders) returns json|http:Unauthorized|error {
+    resource function post setOrders(@http:Query string jwt, db:Order[] newOrders) returns json|http:Unauthorized|error {
         json|http:Unauthorized|error result = googleService.decodeGoogleJWT(jwt);
 
         if result is json {
             //add user to the database
-            check  db.addOrders(newOrders);
+            check db.addOrders(newOrders);
             return "order added successfully";
         } else {
             return result;
@@ -227,10 +228,10 @@ service http:InterceptableService / on new http:Listener(9090) {
             float finalPrice = (lkrPrice < 2000.0)
                 ? 24124 - 53.5 * lkrPrice + 0.0386 * lkrPrice * lkrPrice - 8.82e-6 * lkrPrice * lkrPrice * lkrPrice
                 : 12151 - 10.6 * lkrPrice + 3.29e-3 * lkrPrice * lkrPrice - 2.88e-7 * lkrPrice * lkrPrice * lkrPrice;
-            int printingCost = <int>(finalPrice / 3.5- 6 * weight);
+            int printingCost = <int>(finalPrice / 3.5 - 6 * weight);
             if (printingCost < 0) {
-                weight = weight/1.5;
-            } 
+                weight = weight / 1.5;
+            }
             int totalminutes = <int>((finalPrice / 3.5 - 6 * weight) / 0.69);
             string time = string `${totalminutes / 60} hr ${totalminutes % 60} m`;
             json response = {
@@ -247,148 +248,96 @@ service http:InterceptableService / on new http:Listener(9090) {
         // Convert the payload to a map<json> for easier key checking
         map<json> jsonObj = check payload.ensureType();
 
-    // Validate the presence of required fields
-    if !jsonObj.hasKey("customer") {
-        return error("Missing 'customer' field in request payload");
-    }
-    if !jsonObj.hasKey("email") {
-        return error("Missing 'email' field in request payload");
-    }
-    if !jsonObj.hasKey("products") {
-        return error("Missing 'products' field in request payload");
-    }
-
-    // Parse the request payload
-    string customer = check jsonObj.get("customer").ensureType();
-    string email = check jsonObj.get("email").ensureType();
-    json[] productsJson = check jsonObj.get("products").ensureType();
-
-        Product[] products = [];
-        foreach json productJson in productsJson {
-            map<json> product = check productJson.ensureType();
-            
-            string name = check product.get("name").ensureType();
-            if name == "" {
-                return error("Invalid product name");
-            }
-            
-            int quantity = check product.get("quantity").ensureType();
-            if quantity < 0 {
-                return error("Invalid product quantity");
-            }
-            
-            decimal rate = check product.get("rate").ensureType();
-            if rate < 0.0d {
-                return error("Invalid product rate");
-            }
-            
-            products.push({name, quantity, rate});
-        }
-
-    // Call the createQuotation function
-    json|error quotation = check quotation_generator.createQuotation(email,customer, products);
-
-    if quotation is json {
-        return quotation;
-    } else {
-        return error("Quotation generation failed: " + quotation.toString());
-    }
-
-    // upload the quotation to google drive
-    // if quotation is byte[] {
-    //     drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
-    //     if uploadedFileResult is drive:File {
-    //         string fileID = uploadedFileResult.id.toString();
-    //         string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
-    //         json response = {
-    //             "url": url
-    //         };
-    //         return response;
-    //     } else {
-    //         return error("Quotation upload failed: " + uploadedFileResult.toString());
-    //     }
-    // } else {
-    //     return error("Quotation generation failed: " + quotation.toString());
-    // }
-}
-
-resource function post sendToSheet(http:Caller caller, http:Request req) returns error? {
-        // Convert the payload to a map<json> for easier key checking
-        map<json> jsonObj = check req.getJsonPayload().ensureType();
-
-        // Validate the presence of required fields
-        if !jsonObj.hasKey("customer") {
-            check caller->respond("Missing 'customer' field in request payload");
-            return;
-        }
-        if !jsonObj.hasKey("email") {
-            check caller->respond("Missing 'email' field in request payload");
-            return;
-        }
-        if !jsonObj.hasKey("products") {
-            check caller->respond("Missing 'products' field in request payload");
-            return;
-        }
-
         // Parse the request payload
         string customer = check jsonObj.get("customer").ensureType();
         string email = check jsonObj.get("email").ensureType();
         json[] productsJson = check jsonObj.get("products").ensureType();
 
+        Product[] products = [];
+        foreach json productJson in productsJson {
+            map<json> product = check productJson.ensureType();
+
+            string name = check product.get("name").ensureType();
+
+            int quantity = check product.get("quantity").ensureType();
+
+            decimal rate = check product.get("rate").ensureType();
+
+            products.push({name, quantity, rate});
+        }
+
+        // Call the createQuotation function
+        json|error quotation = check quotation_generator.createQuotation(email, customer, products);
+
+        if quotation is json {
+            log:printInfo("Quotation generated successfully: " + quotation.toString());
+            return quotation;
+        } else {
+            return error("Quotation generation failed: " + quotation.toString());
+        }
+
+        // upload the quotation to google drive
+        // if quotation is byte[] {
+        //     drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
+        //     if uploadedFileResult is drive:File {
+        //         string fileID = uploadedFileResult.id.toString();
+        //         string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
+        //         json response = {
+        //             "url": url
+        //         };
+        //         return response;
+        //     } else {
+        //         return error("Quotation upload failed: " + uploadedFileResult.toString());
+        //     }
+        // } else {
+        //     return error("Quotation generation failed: " + quotation.toString());
+        // }
+    }
+
+    resource function post sendToSheet(http:Request req) returns error? {
+        // Convert the payload to a map<json> for easier key checking
+        map<json> jsonObj = check req.getJsonPayload().ensureType();
+        // Parse the request payload
+        string customer = check jsonObj.get("customer").ensureType();
+        string email = check jsonObj.get("email").ensureType();
+        json[] productsJson = check jsonObj.get("products").ensureType();
         string[] fileNames = [];
         string[] fileURLs = [];
         int[] quantities = [];
         decimal[] prices = [];
         foreach json productJson in productsJson {
             map<json> product = check productJson.ensureType();
-            
+
             string name = check product.get("name").ensureType();
-            if name == "" {
-                check caller->respond("Invalid product name");
-                return;
-            }
 
             string url = check product.get("url").ensureType();
-            if url == "" {
-                check caller->respond("Invalid product url");
-                return;
-            }
-            
+
             int quantity = check product.get("quantity").ensureType();
-            if quantity < 0 {
-                check caller->respond("Invalid product quantity");
-                return;
-            }
-            
+
             decimal rate = check product.get("rate").ensureType();
-            if rate < 0.0d {
-                check caller->respond("Invalid product rate");
-                return;
-            }
 
             fileNames.push(name);
             quantities.push(quantity);
             prices.push(rate);
             fileURLs.push(url);
         }
-            orderData orderData = {
-                customerName: customer,
-                customerEmail: email,
-                fileNames: fileNames,
-                fileURLs: fileURLs,
-                prices: prices,
-                quantities: quantities
-            };
+        orderData orderData = {
+            customerName: customer,
+            customerEmail: email,
+            fileNames: fileNames,
+            fileURLs: fileURLs,
+            prices: prices,
+            quantities: quantities
+        };
 
-            error? addOrderResult = sheetsService.addOrder("1is2fVRLwfFtmg6Dna-5NFqynw6vhtBAwti53g_qeIdM", "Orders", orderData);
+        error? addOrderResult = sheetsService.addOrder("1is2fVRLwfFtmg6Dna-5NFqynw6vhtBAwti53g_qeIdM", "Orders", orderData);
 
-            if addOrderResult is error {
-                check caller->respond("Failed to add order: " + addOrderResult.toString());
-                return;
-            }
-            else {
-                io:println("Order added successfully");
-                return;
-            }
+        if addOrderResult is error {
+            return;
+        }
+        else {
+            log:printInfo("Order added successfully");
+            return;
+        }
     }
 }

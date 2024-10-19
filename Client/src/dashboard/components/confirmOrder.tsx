@@ -115,7 +115,7 @@ export function ConfirmAlert({
               handleSendQuote();
               handleSendToSheet();
               onOpenChange(false);
-              // navigate("/dashboard/orders");
+              navigate("/dashboard/orders");
             }}
           >
             Confirm Order
