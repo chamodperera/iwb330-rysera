@@ -37,6 +37,7 @@ export function Orders() {
           <TableRow>
             <TableHead>Date</TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Quantity</TableHead>
             <TableHead>Print Time</TableHead>
             <TableHead>Price</TableHead>
             <TableHead className="text-right">Status</TableHead>
@@ -53,6 +54,7 @@ export function Orders() {
                   )}
                 </TableCell>
                 <TableCell>{order.fileName}</TableCell>
+                <TableCell>{order.quantity}</TableCell>
                 <TableCell>{order.printTime}</TableCell>
                 <TableCell>{order.price}</TableCell>
                 <TableCell className="text-right font-semibold text-base">

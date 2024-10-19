@@ -167,7 +167,6 @@ service http:InterceptableService / on new http:Listener(9090) {
                 float|error volume = volume_calculator.parseSTL(fileContent);
 
                 if uploadedFileResult is drive:File {
-                    log:printInfo("File uploaded successfully: " + uploadedFileResult.toString());
                     if volume is float {
                         log:printInfo("Volume calculated successfully: " + volume.toString());
                         string fileID = uploadedFileResult.id.toString();
@@ -294,22 +293,6 @@ service http:InterceptableService / on new http:Listener(9090) {
         return error("Quotation generation failed: " + quotation.toString());
     }
 
-    // upload the quotation to google drive
-    // if quotation is byte[] {
-    //     drive:File|error uploadedFileResult = googleDriveService.uploadFile(quotation, string `${customer}.pdf`, "1wKktZ0kuX4vF5yBa56eUvfqGMxqQ4nzS");
-    //     if uploadedFileResult is drive:File {
-    //         string fileID = uploadedFileResult.id.toString();
-    //         string url = string `https://drive.usercontent.google.com/download?id=${fileID}&confirm=xxx`;
-    //         json response = {
-    //             "url": url
-    //         };
-    //         return response;
-    //     } else {
-    //         return error("Quotation upload failed: " + uploadedFileResult.toString());
-    //     }
-    // } else {
-    //     return error("Quotation generation failed: " + quotation.toString());
-    // }
 }
 
 resource function post sendToSheet(http:Caller caller, http:Request req) returns error? {

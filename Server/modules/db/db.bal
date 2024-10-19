@@ -51,7 +51,7 @@ public isolated class Database {
     } else {
         return findResult;
     }
-    if result.length() != 1 {
+    if result.length() < 0 {
         return error(string `Failed to fetch orders`);
     }
 

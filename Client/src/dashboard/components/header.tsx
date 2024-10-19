@@ -1,23 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UseUser } from "@/userContext";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Header: React.FC = () => {
   const { user } = UseUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const [buttonText, setButtonText] = useState("View Orders");
 
   const handleButtonClick = () => {
-    if (buttonText === "View Orders") {
-      navigate("/dashboard/orders");
-      setButtonText("Dashboard");
-    } else {
+    if (location.pathname === "/dashboard/orders") {
       navigate("/dashboard");
-      setButtonText("View Orders");
+    } else {
+      navigate("/dashboard/orders");
     }
   };
+
+  useEffect(() => {
+    if (location.pathname === "/dashboard/orders") {
+      setButtonText("Dashboard");
+    } else {
+      setButtonText("View Orders");
+    }
+  }, [location.pathname]);
 
   return (
     <header className="border-b">

@@ -22,4 +22,6 @@ public type Order record {|
     string status;
     string printTime;
     string price;
+    int quantity;
+    string url;
 |};

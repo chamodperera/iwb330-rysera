@@ -1,7 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -15,6 +13,8 @@ import { sendOrders } from "@/services/order";
 import { useNavigate } from "react-router-dom";
 import { sendQuote } from "@/services/quote";
 import { sendtoSheet } from "@/services/sheets";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ConfirmAlertProps {
   open: boolean;
@@ -30,6 +30,7 @@ export function ConfirmAlert({
   user,
 }: ConfirmAlertProps) {
   const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(false);
   const handleSendOrder = async () => {
     await sendOrders(orders);
   };
@@ -57,6 +58,8 @@ export function ConfirmAlert({
         url: order.url,
       })),
     });
+    onOpenChange(false);
+    navigate("/dashboard/orders");
   };
 
   return (
@@ -109,21 +112,37 @@ export function ConfirmAlert({
           </Card>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              // handleSendOrder();
-              console.log("Sending to sheet");
-              handleSendQuote();
-              handleSendToSheet();
-              onOpenChange(false);
-              // navigate("/dashboard/orders");
+          {!isProcessing ? (
+            <Button onClick={() => onOpenChange(false)} variant="outline">
+              Cancel
+            </Button>
+          ) : null}
+          <Button
+            onClick={async () => {
+              if (!isProcessing) {
+                setIsProcessing(true);
+                try {
+                  await handleSendOrder();
+                  console.log("Sending to sheet");
+                  await handleSendQuote();
+                  await handleSendToSheet();
+                } catch (error) {
+                  // Handle the error as needed
+                  console.error("Error while confirming order:", error);
+                } finally {
+                  onOpenChange(false);
+                  navigate("/dashboard/orders");
+                  setIsProcessing(false);
+                }
+              }
             }}
           >
-            Confirm Order
-          </AlertDialogAction>
+            {isProcessing ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-5" />
+            ) : (
+              "Confirm Order"
+            )}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
