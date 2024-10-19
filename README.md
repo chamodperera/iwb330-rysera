@@ -1,6 +1,11 @@
 # 3D Printing by Rysera
 
 Welcome to the 3D Printing by Rysera project! This project is a comprehensive solution for managing 3D printing orders, including features for handling STL files, integrating with Google Sheets, Google Drive, Zoho Books, MongoDB, and Google OAuth.
+<div style="display: flex; justify-content: space-between;">
+<img src="./Client/src/assets/images/Home.png" alt="Home" width="400"/>
+<img src="./Client/src/assets/images/Dashboard.png" alt="Home" width="400"/>
+</div>
+
 
 ## Table of Contents
 * [Features](#features)
