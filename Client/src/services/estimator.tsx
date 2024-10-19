@@ -1,7 +1,10 @@
 import api from "./api";
-import { EstimateResponse, UploadResponse } from "../models";
+import { EstimateResponse, UploadResponse } from "../types";
 
-export const uploadFile = async (file: File, p0: (progress: any) => void): Promise<UploadResponse> => {
+export const uploadFile = async (
+  file: File,
+  p0: (progress: any) => void
+): Promise<UploadResponse> => {
   const formData = new FormData();
   formData.append("file", file);
 

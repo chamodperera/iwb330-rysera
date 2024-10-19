@@ -1,44 +1,51 @@
-import { useState } from 'react';
-import { FileState } from '../types';
-import { uploadFile } from '../../services/estimator';
+import { useState } from "react";
+import { FileState } from "../../types";
+import { uploadFile } from "../../services/estimator";
+import { UseUser } from "@/userContext";
 
 export function useFileUpload() {
-  const [fileStates, setFileStates] = useState<FileState[]>([]);
-  const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [dragActive, setDragActive] = useState(false);
+  const { fileStates, setFileStates } = UseUser();
+  const { currentFileIndex, setCurrentFileIndex } = UseUser(); // Specify the type for clarity
+  const [dragActive, setDragActive] = useState<boolean>(false); // Specify the type for clarity
 
   const upload = async (index: number, currentFileStates: FileState[]) => {
-    setFileStates(prevStates => {
+    setFileStates((prevStates: FileState[]) => {
       const newStates = [...prevStates];
-      newStates[index] = { ...newStates[index], status: 'uploading' };
-      return newStates;
+      newStates[index] = { ...newStates[index], status: "uploading" };
+      return newStates; // Return the updated states
     });
 
     try {
-      const result = await uploadFile(currentFileStates[index].file, (progress: number) => {
-        setFileStates(prevStates => {
-          const newStates = [...prevStates];
-          newStates[index] = { ...newStates[index], uploadProgress: progress };
-          return newStates;
-        });
-      });
+      const result = await uploadFile(
+        currentFileStates[index].file,
+        (progress: number) => {
+          setFileStates((prevStates: FileState[]) => {
+            const newStates = [...prevStates];
+            newStates[index] = {
+              ...newStates[index],
+              uploadProgress: progress,
+            };
+            return newStates; // Return the updated states
+          });
+        }
+      );
 
-      setFileStates(prevStates => {
+      setFileStates((prevStates: FileState[]) => {
         const newStates = [...prevStates];
         newStates[index] = {
           ...newStates[index],
-          status: 'uploaded',
+          status: "uploaded",
           url: result.url,
-          volume: result.volume
+          volume: result.volume,
         };
-        return newStates;
+        return newStates; // Return the updated states
       });
     } catch (error) {
       console.error("Error uploading file:", error);
-      setFileStates(prevStates => {
+      setFileStates((prevStates: FileState[]) => {
         const newStates = [...prevStates];
-        newStates[index] = { ...newStates[index], status: 'error' };
-        return newStates;
+        newStates[index] = { ...newStates[index], status: "error" };
+        return newStates; // Return the updated states
       });
     }
   };
@@ -50,6 +57,6 @@ export function useFileUpload() {
     setCurrentFileIndex,
     dragActive,
     setDragActive,
-    upload
+    upload,
   };
 }

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Order, User } from "@/models";
+import { Order, User } from "@/types";
 import { sendOrders } from "@/services/order";
 import { useNavigate } from "react-router-dom";
 import { sendQuote } from "@/services/quote";
@@ -44,7 +44,7 @@ export function ConfirmAlert({
         quantity: order.quantity,
       })),
     });
-  }
+  };
 
   const handleSendToSheet = async () => {
     await sendtoSheet({
@@ -57,7 +57,7 @@ export function ConfirmAlert({
         url: order.url,
       })),
     });
-  }
+  };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -96,7 +96,11 @@ export function ConfirmAlert({
                   <span className="font-semibold">
                     Rs.
                     {orders
-                      .reduce((sum, order) => sum + parseFloat(order.price) * order.quantity, 0)
+                      .reduce(
+                        (sum, order) =>
+                          sum + parseFloat(order.price) * order.quantity,
+                        0
+                      )
                       .toFixed(2)}
                   </span>
                 </div>

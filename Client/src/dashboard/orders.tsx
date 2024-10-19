@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Order } from "@/models";
+import { Order } from "@/types";
 import { getOrders } from "@/services/order";
 import { useEffect, useState } from "react";
 
