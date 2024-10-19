@@ -3,19 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ButtonLoading } from "@/components/ui/loadingButton";
 import { EstimatedValuesCard } from "@/components/estimated-values-card";
 import { getEstimate } from "../../services/estimator";
-import { FileState } from "../../types";
-
-interface EstimatorProps {
-  fileState: FileState;
-  unit: string;
-  loadTime: string;
-  estimatedValues: { price: number; time: string; weight: number } | null;
-  onEstimateStart?: () => void;
-  onEstimateComplete?: (price: number, time: string, weight: number) => void;
-  onLoadTime?: (loadTime: string) => void;
-  uploadedUrl: string;
-  uploadedVolume: number;
-}
+import { EstimatorProps } from "../../types";
 
 const Estimator: React.FC<EstimatorProps> = ({
   fileState,

@@ -56,6 +56,18 @@ export interface EstimatedValue {
   weight: number;
 }
 
+export interface EstimatorProps {
+  fileState: FileState;
+  unit: string;
+  loadTime: string;
+  estimatedValues: { price: number; time: string; weight: number } | null;
+  onEstimateStart?: () => void;
+  onEstimateComplete?: (price: number, time: string, weight: number) => void;
+  onLoadTime?: (loadTime: string) => void;
+  uploadedUrl: string;
+  uploadedVolume: number;
+}
+
 export interface EstimateResponse {
   price: number;
   time: string;
