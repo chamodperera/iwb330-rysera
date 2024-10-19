@@ -5,7 +5,7 @@ import { UseUser } from "@/userContext";
 
 export function useFileUpload() {
   const { fileStates, setFileStates } = UseUser();
-  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0); // Specify the type for clarity
+  const { currentFileIndex, setCurrentFileIndex } = UseUser(); // Specify the type for clarity
   const [dragActive, setDragActive] = useState<boolean>(false); // Specify the type for clarity
 
   const upload = async (index: number, currentFileStates: FileState[]) => {

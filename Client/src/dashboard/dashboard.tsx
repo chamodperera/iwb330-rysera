@@ -25,6 +25,7 @@ import PLA from "../assets/PLA.png";
 import ABS from "../assets/ABS.webp";
 import PETG from "../assets/PETG.webp";
 import TPU from "../assets/TPU.png";
+import { UseUser } from "@/userContext";
 
 const defaultMaterial: Material = {
   name: "PLA",
@@ -64,9 +65,7 @@ export default function Dashboard() {
     upload,
   } = useFileUpload();
 
-  const [estimatedValues, setEstimatedValues] = useState<
-    (EstimatedValue | null)[]
-  >([]);
+  const { estimatedValues, setEstimatedValues } = UseUser();
   const [loadTimes, setLoadTimes] = useState<string[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
