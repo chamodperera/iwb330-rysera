@@ -1,5 +1,5 @@
 import api from "./api";
-import { Order } from "../models";
+import { Order } from "../types";
 
 export const getOrders = async () => {
   try {

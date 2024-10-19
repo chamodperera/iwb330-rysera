@@ -1,17 +1,24 @@
 // Dashboard.tsx
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { MaterialCard } from './components/materialCard';
-import { FileUploadArea } from './components/fileUploadArea';
-import { SettingsPanel } from './components/settingPanel';
-import { useFileUpload } from './hooks/useFileUpload';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { MaterialCard } from "./components/materialCard";
+import { FileUploadArea } from "./components/fileUploadArea";
+import { SettingsPanel } from "./components/settingPanel";
+import { useFileUpload } from "./hooks/useFileUpload";
 import STLViewer from "./components/STLViewer";
 import Estimator from "./components/estimator";
 import PriceSummary from "./components/priceSummary";
-import { Material, EstimatedValue, FileState } from './types';
+import { Material, EstimatedValue, FileState } from "../types";
 
 // Import material images
 import PLA from "../assets/PLA.png";
@@ -20,22 +27,23 @@ import PETG from "../assets/PETG.webp";
 import TPU from "../assets/TPU.png";
 
 const defaultMaterial: Material = {
-  name: 'PLA',
-  description: 'PLA (polylactic acid), is a thermoplastic polymer derived from renewable resources. This feature sets it apart from other commonly used plastics. PLA is great for low cost prototyping, containers, and functional parts under a light load.',
+  name: "PLA",
+  description:
+    "PLA (polylactic acid), is a thermoplastic polymer derived from renewable resources. This feature sets it apart from other commonly used plastics. PLA is great for low cost prototyping, containers, and functional parts under a light load.",
   properties: {
-    Tensile: '26.8 - 70 MPa',
-    elongation: '1.9 - 20%',
-    Flexural: '46 - 88 MPa',
-    HDT: '50 - 55°C',
+    Tensile: "26.8 - 70 MPa",
+    elongation: "1.9 - 20%",
+    Flexural: "46 - 88 MPa",
+    HDT: "50 - 55°C",
   },
-  colors: ['White','Black','Grey'],
+  colors: ["White", "Black", "Grey"],
 };
 
 const defaultSettings: Partial<FileState> = {
   material: defaultMaterial,
   infill: 20,
-  quality: 'normal',
-  color: 'Black',
+  quality: "normal",
+  color: "Black",
 };
 
 const materialImages: { [key: string]: string } = {
@@ -53,23 +61,30 @@ export default function Dashboard() {
     setCurrentFileIndex,
     dragActive,
     setDragActive,
-    upload
+    upload,
   } = useFileUpload();
 
-  const [estimatedValues, setEstimatedValues] = useState<(EstimatedValue | null)[]>([]);
+  const [estimatedValues, setEstimatedValues] = useState<
+    (EstimatedValue | null)[]
+  >([]);
   const [loadTimes, setLoadTimes] = useState<string[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
-  const [globalSettings, setGlobalSettings] = useState<Omit<FileState, 'file' | 'status' | 'uploadProgress'>>(defaultSettings);
-
-
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
+    null
+  );
+  const [globalSettings, setGlobalSettings] =
+    useState<Omit<FileState, "file" | "status" | "uploadProgress">>(
+      defaultSettings
+    );
 
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await axios.get('/materials.json');
+        const response = await axios.get("/materials.json");
         setMaterials(response.data);
-        const defaultMaterial = response.data.find((mat: Material) => mat.name === "PLA");
+        const defaultMaterial = response.data.find(
+          (mat: Material) => mat.name === "PLA"
+        );
         setSelectedMaterial(defaultMaterial);
       } catch (error) {
         console.error("Error fetching materials:", error);
@@ -79,19 +94,19 @@ export default function Dashboard() {
     fetchMaterials();
   }, []);
 
-  
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
       const newFileStates: FileState[] = newFiles.map((file) => ({
         file,
-        status: 'idle',
+        status: "idle",
         uploadProgress: 0,
         ...defaultSettings,
       }));
-  
-      setFileStates(prevStates => {
+
+      setFileStates((prevStates) => {
         const updatedStates = [...prevStates, ...newFileStates];
         // Start uploading each new file after state update
         newFileStates.forEach((_, index) => {
@@ -125,8 +140,12 @@ export default function Dashboard() {
   };
 
   const handleDeleteFile = () => {
-    setFileStates(prevStates => prevStates.filter((_, index) => index !== currentFileIndex));
-    setCurrentFileIndex(prevIndex => Math.min(prevIndex, fileStates.length - 2));
+    setFileStates((prevStates) =>
+      prevStates.filter((_, index) => index !== currentFileIndex)
+    );
+    setCurrentFileIndex((prevIndex) =>
+      Math.min(prevIndex, fileStates.length - 2)
+    );
   };
 
   const handleAddFile = () => {
@@ -158,33 +177,36 @@ export default function Dashboard() {
       ...prevValues,
       [index]: { price, time, weight },
     }));
-    fileStates[index].status = 'estimated';
+    fileStates[index].status = "estimated";
   };
-
 
   const renderFileContent = () => {
     const currentFile = fileStates[currentFileIndex];
-    
-    if (currentFile.status === 'uploading') {
+
+    if (currentFile.status === "uploading") {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center">
-          <p className="mt-4">Uploading: {currentFile.uploadProgress.toFixed(0)}%</p>
+          <p className="mt-4">
+            Uploading: {currentFile.uploadProgress.toFixed(0)}%
+          </p>
         </div>
       );
     }
 
-    if (currentFile.status === 'uploaded') {
+    if (currentFile.status === "uploaded") {
       return <STLViewer file={currentFile.file} />;
     }
 
-    if (currentFile.status === 'error') {
+    if (currentFile.status === "error") {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center">
-          <p className="text-red-500">Error uploading file. Please try again.</p>
+          <p className="text-red-500">
+            Error uploading file. Please try again.
+          </p>
         </div>
       );
     }
-    
+
     return (
       <div className="w-full h-full flex flex-col items-center justify-center">
         <p>Preparing your file...</p>
@@ -192,28 +214,29 @@ export default function Dashboard() {
     );
   };
 
-  
   const handleSettingsChange = (
-    type: 'material' | 'infill' | 'quality' | 'color',
+    type: "material" | "infill" | "quality" | "color",
     value: any,
     fileIndex?: number
   ) => {
-    if (typeof fileIndex === 'number') {
+    if (typeof fileIndex === "number") {
       const initialPrice = fileStates[fileIndex].initialPrice || 0;
-      if(type === 'infill') {
+      if (type === "infill") {
         if (estimatedValues[fileIndex]) {
-          estimatedValues[fileIndex].price = initialPrice * (1 + (value / 80 - 0.25));
+          estimatedValues[fileIndex].price =
+            initialPrice * (1 + (value / 80 - 0.25));
         }
       }
 
-      if(type === 'quality') {
+      if (type === "quality") {
         if (estimatedValues[fileIndex]) {
-          estimatedValues[fileIndex].price = initialPrice * (value === 'high' ? 1.3 : 1);
+          estimatedValues[fileIndex].price =
+            initialPrice * (value === "high" ? 1.3 : 1);
         }
       }
 
       // Update specific file settings
-      setFileStates(prevStates => {
+      setFileStates((prevStates) => {
         const newStates = [...prevStates];
         newStates[fileIndex] = {
           ...newStates[fileIndex],
@@ -223,7 +246,7 @@ export default function Dashboard() {
       });
     } else {
       // Update global settings
-      setGlobalSettings(prev => ({
+      setGlobalSettings((prev) => ({
         ...prev,
         [type]: value,
       }));
@@ -231,43 +254,69 @@ export default function Dashboard() {
   };
 
   const renderSettingsPanel = () => {
-    const settings = fileStates.length > 0 
-      ? fileStates[currentFileIndex]
-      : globalSettings;
+    const settings =
+      fileStates.length > 0 ? fileStates[currentFileIndex] : globalSettings;
 
     return (
-      <div className="lg:block">
+      <div className="lg:block h-full flex flex-col">
         <SettingsPanel
           materials={materials}
           selectedMaterial={settings.material || null}
           infillValue={settings.infill ?? 0}
-          quality={settings.quality ?? 'normal'}
-          color={settings.color || 'defaultColor'}
+          quality={settings.quality ?? "normal"}
+          color={settings.color || "defaultColor"}
           onMaterialChange={(materialName) => {
-            const material = materials.find(mat => mat.name === materialName);
+            const material = materials.find((mat) => mat.name === materialName);
             if (material) {
-              handleSettingsChange('material', material, fileStates.length > 0 ? currentFileIndex : undefined);
+              handleSettingsChange(
+                "material",
+                material,
+                fileStates.length > 0 ? currentFileIndex : undefined
+              );
             }
           }}
-          onInfillChange={(value) => handleSettingsChange('infill', value[0], fileStates.length > 0 ? currentFileIndex : undefined)}
-          onQualityChange={(quality: 'normal' | 'high') => handleSettingsChange('quality', quality, fileStates.length > 0 ? currentFileIndex : undefined)}
-          onColorChange={(color: string) => handleSettingsChange('color', color, fileStates.length > 0 ? currentFileIndex : undefined)}
-          >
-            {fileStates.length > 0 && (
+          onInfillChange={(value) =>
+            handleSettingsChange(
+              "infill",
+              value[0],
+              fileStates.length > 0 ? currentFileIndex : undefined
+            )
+          }
+          onQualityChange={(quality: "normal" | "high") =>
+            handleSettingsChange(
+              "quality",
+              quality,
+              fileStates.length > 0 ? currentFileIndex : undefined
+            )
+          }
+          onColorChange={(color: string) =>
+            handleSettingsChange(
+              "color",
+              color,
+              fileStates.length > 0 ? currentFileIndex : undefined
+            )
+          }
+        >
+          {fileStates.length > 0 && (
+            <div className="flex-grow">
+              {" "}
+              {/* Allow PriceSummary to grow and take full height */}
               <PriceSummary
                 fileStates={fileStates}
                 estimatedValues={estimatedValues}
               />
-            )}
-          </SettingsPanel>
+            </div>
+          )}
+        </SettingsPanel>
       </div>
     );
   };
 
   const renderMaterialCard = () => {
-    const selectedMaterial = fileStates.length > 0
-      ? fileStates[currentFileIndex].material
-      : globalSettings.material;
+    const selectedMaterial =
+      fileStates.length > 0
+        ? fileStates[currentFileIndex].material
+        : globalSettings.material;
 
     return (
       <MaterialCard
@@ -275,8 +324,7 @@ export default function Dashboard() {
         materialImages={materialImages}
       />
     );
-  }
-
+  };
 
   return (
     <div className="flex gap-4 h-[80vh]">
@@ -330,38 +378,50 @@ export default function Dashboard() {
                   estimatedValues={estimatedValues[currentFileIndex]}
                   loadTime={loadTimes[currentFileIndex]}
                   onEstimateStart={() => {
-                    setFileStates(prevStates => {
+                    setFileStates((prevStates) => {
                       const newStates = [...prevStates];
                       newStates[currentFileIndex] = {
                         ...newStates[currentFileIndex],
-                        isEstimating: true
+                        isEstimating: true,
                       };
                       return newStates;
                     });
                     handleEstimateStart(currentFileIndex);
                   }}
                   onEstimateComplete={(price, time, weight) => {
-                    setFileStates(prevStates => {
+                    setFileStates((prevStates) => {
                       const newStates = [...prevStates];
                       newStates[currentFileIndex] = {
                         ...newStates[currentFileIndex],
                         isEstimating: false,
-                        initialPrice: price
+                        initialPrice: price,
                       };
                       return newStates;
                     });
-                    handleEstimateComplete(currentFileIndex, price, time, weight);
+                    handleEstimateComplete(
+                      currentFileIndex,
+                      price,
+                      time,
+                      weight
+                    );
                   }}
-                  onLoadTime={(loadTime) => handleLoadTime(currentFileIndex, loadTime)}
-                  uploadedUrl={fileStates[currentFileIndex].url || ''}
+                  onLoadTime={(loadTime) =>
+                    handleLoadTime(currentFileIndex, loadTime)
+                  }
+                  uploadedUrl={fileStates[currentFileIndex].url || ""}
                   uploadedVolume={fileStates[currentFileIndex].volume || 0}
                 />
               </div>
 
               {/* Pagination */}
               <Pagination className="absolute bottom-0 mb-4">
-                <PaginationPrevious 
-                  onClick={() => setCurrentFileIndex(prev => (prev - 1 + fileStates.length) % fileStates.length)} 
+                <PaginationPrevious
+                  onClick={() =>
+                    setCurrentFileIndex(
+                      (prev) =>
+                        (prev - 1 + fileStates.length) % fileStates.length
+                    )
+                  }
                 />
                 <PaginationContent>
                   {fileStates.map((_, index) => (
@@ -375,8 +435,12 @@ export default function Dashboard() {
                     </PaginationItem>
                   ))}
                 </PaginationContent>
-                <PaginationNext 
-                  onClick={() => setCurrentFileIndex(prev => (prev + 1) % fileStates.length)} 
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentFileIndex(
+                      (prev) => (prev + 1) % fileStates.length
+                    )
+                  }
                 />
               </Pagination>
             </>
@@ -403,7 +467,6 @@ export default function Dashboard() {
             />
           )} */}
         </div>
-
       </div>
     </div>
   );

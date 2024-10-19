@@ -5,8 +5,8 @@ import {
 } from "@react-oauth/google";
 import { handleLogin } from "@/services/auth";
 import { useNavigate } from "react-router-dom";
-import { User } from "@/models";
-import { UseUser } from "../context";
+import { User } from "@/types";
+import { UseUser } from "../userContext";
 
 export default function GoogleButton() {
   const { setUser } = UseUser();

@@ -4,8 +4,10 @@ import {
   useContext,
   ReactNode,
   useEffect,
+  Dispatch,
+  SetStateAction,
 } from "react";
-import { User, Order } from "./models";
+import { User, Order, FileState } from "./types";
 import { handleLogin } from "./services/auth";
 
 // Define the context value type
@@ -14,6 +16,8 @@ interface UserContextType {
   setUser: (user: User | null) => void;
   orders: Order[];
   setOrders: (orders: Order[]) => void;
+  fileStates: FileState[]; // Add fileStates
+  setFileStates: Dispatch<SetStateAction<FileState[]>>; // Add setFileStates
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -22,6 +26,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -35,7 +40,9 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, orders, setOrders }}>
+    <UserContext.Provider
+      value={{ user, setUser, orders, setOrders, fileStates, setFileStates }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -11,8 +11,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "../components/ui/input";
-import { UseUser } from "@/context";
-import { User } from "@/models";
+import { UseUser } from "@/userContext";
+import { User } from "@/types";
 import { registerUser } from "@/services/auth";
 import { useNavigate } from "react-router-dom";
 

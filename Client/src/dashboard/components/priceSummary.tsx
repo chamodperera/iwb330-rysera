@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UseUser } from "@/context";
+import { UseUser } from "@/userContext";
 import { useNavigate } from "react-router-dom";
-import { Order } from "@/models";
+import { Order } from "@/types";
 import { useState } from "react";
 import { ConfirmAlert } from "./confirmOrder";
-import Quantity  from "../components/qunatityInput";
+import Quantity from "../components/qunatityInput";
 
 interface PriceSummaryProps {
   fileStates: Array<{
@@ -27,10 +27,12 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
   const { user, orders, setOrders } = UseUser();
   const navigate = useNavigate();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [quantities, setQuantities] = useState<number[]>(fileStates.map(() => 1));
+  const [quantities, setQuantities] = useState<number[]>(
+    fileStates.map(() => 1)
+  );
 
   const handleQuantityChange = (index: number, quantity: number) => {
-    setQuantities(prevQuantities => {
+    setQuantities((prevQuantities) => {
       const newQuantities = [...prevQuantities];
       newQuantities[index] = quantity;
       return newQuantities;
@@ -75,18 +77,21 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
 
   const calculateTotal = () => {
     return Object.values(estimatedValues)
-      .filter((value, index): value is { price: number; time: string; weight: number } => value !== null)
+      .filter(
+        (value): value is { price: number; time: string; weight: number } =>
+          value !== null
+      )
       .reduce((sum, value, index) => sum + value.price * quantities[index], 0);
   };
 
   return (
-    <div>
-      <Card className="mt-6">
+    <div className="flex flex-col h-full">
+      <Card className="flex flex-col flex-grow">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Price Summary</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-48 pr-4">
+        <CardContent className="flex flex-col flex-grow">
+          <ScrollArea className="flex-grow pr-4">
             {fileStates.map((fileState, index) => (
               <div
                 key={index}
@@ -109,7 +114,6 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
               </div>
             ))}
           </ScrollArea>
-
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex justify-between items-center">
               <span className="font-semibold">Total</span>

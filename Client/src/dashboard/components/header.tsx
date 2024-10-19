@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UseUser } from "@/context";
+import { UseUser } from "@/userContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 

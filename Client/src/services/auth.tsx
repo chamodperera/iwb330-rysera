@@ -1,5 +1,5 @@
 import api from "./api";
-import { UserData } from "../models";
+import { UserData } from "../types";
 
 // Define the function to handle Google login
 export const handleLogin = async () => {

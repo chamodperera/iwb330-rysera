@@ -24,6 +24,38 @@ export interface Order {
   url: string;
 }
 
+export interface FileState {
+  file: File;
+  status: "idle" | "uploading" | "uploaded" | "error" | "estimated";
+  uploadProgress: number;
+  url?: string;
+  volume?: number;
+  isEstimating?: boolean;
+  material?: Material;
+  quality?: "normal" | "high";
+  color?: string;
+  infill?: number;
+  initialPrice?: number;
+}
+
+export interface Material {
+  name: string;
+  description: string;
+  properties: {
+    Tensile: string;
+    elongation: string;
+    Flexural: string;
+    HDT: string;
+  };
+  colors: string[];
+}
+
+export interface EstimatedValue {
+  price: number;
+  time: string;
+  weight: number;
+}
+
 export interface EstimateResponse {
   price: number;
   time: string;
@@ -34,13 +66,13 @@ export interface UploadResponse {
   volume: number;
 }
 
-export interface QuoteRequest { 
+export interface QuoteRequest {
   customer: string;
   email: string;
   products: Product[];
 }
 
-export interface Product{
+export interface Product {
   name: string;
   rate: number;
   quantity: number;
@@ -56,4 +88,3 @@ export interface SheetsData {
   email: string;
   products: Product[];
 }
-
