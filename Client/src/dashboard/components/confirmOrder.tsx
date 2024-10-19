@@ -15,6 +15,7 @@ import { sendQuote } from "@/services/quote";
 import { sendtoSheet } from "@/services/sheets";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { UseUser } from "@/userContext";
 
 interface ConfirmAlertProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function ConfirmAlert({
   orders,
   user,
 }: ConfirmAlertProps) {
+  const { setFileStates, setCurrentFileIndex, setEstimatedValues } = UseUser();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const handleSendOrder = async () => {
@@ -132,6 +134,9 @@ export function ConfirmAlert({
                 } finally {
                   onOpenChange(false);
                   navigate("/dashboard/orders");
+                  setFileStates([]);
+                  setCurrentFileIndex(0);
+                  setEstimatedValues([]);
                   setIsProcessing(false);
                 }
               }

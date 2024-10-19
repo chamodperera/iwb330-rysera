@@ -38,7 +38,7 @@ export function Orders() {
             <TableHead>Date</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Quantity</TableHead>
-            <TableHead>Print Time</TableHead>
+            <TableHead>{`Print Time (per Unit)`}</TableHead>
             <TableHead>Price</TableHead>
             <TableHead className="text-right">Status</TableHead>
           </TableRow>
