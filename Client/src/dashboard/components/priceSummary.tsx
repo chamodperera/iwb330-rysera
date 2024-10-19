@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { UseUser } from "@/userContext";
 import { useNavigate } from "react-router-dom";
 import { Order } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConfirmAlert } from "./confirmOrder";
 import Quantity from "../components/qunatityInput";
 
@@ -30,6 +30,10 @@ const PriceSummary = ({ fileStates, estimatedValues }: PriceSummaryProps) => {
   const [quantities, setQuantities] = useState<number[]>(
     fileStates.map(() => 1)
   );
+
+  useEffect(() => {
+    setQuantities(fileStates.map(() => 1));
+  }, [fileStates]);
 
   const handleQuantityChange = (index: number, quantity: number) => {
     setQuantities((prevQuantities) => {
