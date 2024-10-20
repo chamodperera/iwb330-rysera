@@ -1,5 +1,5 @@
 import ballerina/http;
-import ballerina/io;
+import ballerina/log;
 
 # Represents the Zoho Books quotation service
 public isolated class ZohoQuotationService {
@@ -66,12 +66,12 @@ public isolated class ZohoQuotationService {
             );
         }
         responseJson = check response.getJsonPayload();
-        io:print(responseJson);
         json[] contacts = <json[]>check responseJson.contacts;
         foreach var contact in contacts {
         // Search for existing contact
             if (contact.contact_name == contactName) {
                 json contactId = check contact.contact_id;
+                log:printInfo("Found existing contact: " + contactName);
                 return contactId.toString();
             }
         }
@@ -97,10 +97,12 @@ public isolated class ZohoQuotationService {
         if contactId is error {
             return contactId;
         }
+        log:printInfo("Created new contact: " + contactName);
         return contactId.toString();
     }
 
     # Create a quotation in Zoho Books
+    # + customerEmail - Email of the customer
     # + customerName - Name of the customer
     # + products - Array of products with name, quantity and rate
     # + return - Quotation ID or error
@@ -216,5 +218,5 @@ public type EmailDetails record {
     boolean sendFromOrgEmailId = true;
     string[] toMailIds;
     string? subject = "Statement of transactions with Rysera Innovations";
-    string? body = "Dear Customer,   Thanks for your business enquiry.         The estimate EST-000002 is attached with this email.        We can get started if you send us your consent. For any assistance you can reach us via email or phone.         Looking forward to hearing back from you. Here's an overview of the estimate for your reference.";
+    string? body = "Dear Customer,   Thanks for your business enquiry.         The estimate is attached with this email.        We can get started if you send us your consent. For any assistance you can reach us via email or phone.         Looking forward to hearing back from you. Here's an overview of the estimate for your reference.";
 };

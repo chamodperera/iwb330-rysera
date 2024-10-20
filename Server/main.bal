@@ -220,6 +220,7 @@ service http:InterceptableService / on new http:Listener(9090) {
         string url = check jsonObj.url;
         float weight = check jsonObj.weight;
         json|error result = estimator.estimate(url);
+        string time;
 
         if result is json {
             float price = check result.data.price;
@@ -232,7 +233,12 @@ service http:InterceptableService / on new http:Listener(9090) {
                 weight = weight / 1.5;
             }
             int totalminutes = <int>((finalPrice / 3.5 - 6 * weight) / 0.69);
-            string time = string `${totalminutes / 60} hr ${totalminutes % 60} m`;
+            if (totalminutes < 0) {
+                time = "0";
+            }
+            else {
+                time = string `${totalminutes / 60} hr ${totalminutes % 60} m`;
+            }
             json response = {
                 "price": finalPrice.round(2),
                 "time": time

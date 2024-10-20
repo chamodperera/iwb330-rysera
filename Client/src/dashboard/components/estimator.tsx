@@ -36,6 +36,9 @@ const Estimator: React.FC<EstimatorProps> = ({
       }
       const weight = uploadedVolume * 1.25;
       const estimateResult = await getEstimate(uploadedUrl, weight);
+      if (estimateResult.time === "0") {
+        estimateResult.time = "TBD";
+      }
 
       if (fileState.quality === "high") {
         estimateResult.price = estimateResult.price * 1.3;
