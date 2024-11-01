@@ -21,7 +21,7 @@ import PriceSummary from "./components/priceSummary";
 import { Material, FileState } from "../types";
 
 // Import material images
-import PLA from "../assets/PLA.png";
+import PLA from "../assets/pla.png";
 import ABS from "../assets/ABS.webp";
 import PETG from "../assets/PETG.webp";
 import TPU from "../assets/TPU.png";
