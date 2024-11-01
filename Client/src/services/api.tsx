@@ -15,7 +15,7 @@ api.interceptors.request.use(
     // Add x-api-key header
     const apiKey = import.meta.env.VITE_MIDDLEWARE_API_KEY; // Assuming the API key is stored in environment variables
     if (apiKey) {
-      config.headers["X-Api-Key"] = apiKey;
+      config.headers["api-Key"] = apiKey;
     }
     // Add this line to log the headers
     return config;
